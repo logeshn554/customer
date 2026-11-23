@@ -133,8 +133,8 @@ class _CustomerHomePageState extends ConsumerState<CustomerHomePage> {
           UnifiedActiveBookingItem(
             id: d.id,
             verticalType: d.verticalType.isNotEmpty ? d.verticalType : 'FOOD',
-            title: d.outletName.isNotEmpty ? d.outletName : 'Order #${d.jobNumber}',
-            subtitle: 'To: ${d.destinationAddress}',
+            title: (d.outletName != null && d.outletName!.isNotEmpty) ? d.outletName! : 'Order #${d.jobNumber}',
+            subtitle: 'To: ${d.dropoffAddress}',
             status: d.status,
             verificationPin: d.deliveryPin,
             onTrack: () {

@@ -31,7 +31,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       final cart = await client.getCart();
       CartPricingModel? pricing;
       if (cart.items.isNotEmpty) {
-        pricing = await client.getCheckoutEstimate().catchError((_) => null);
+        try {
+          pricing = await client.getCheckoutEstimate();
+        } catch (_) {}
       }
       if (mounted) {
         setState(() {
@@ -48,7 +50,10 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   Future<void> _updateQuantity(String cartItemId, int qty) async {
     try {
       final updated = await ref.read(apiClientProvider).updateCartItemQuantity(cartItemId, qty);
-      final pricing = await ref.read(apiClientProvider).getCheckoutEstimate().catchError((_) => null);
+      CartPricingModel? pricing;
+      try {
+        pricing = await ref.read(apiClientProvider).getCheckoutEstimate();
+      } catch (_) {}
       if (mounted) {
         setState(() {
           _cart = updated;
@@ -65,7 +70,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       final updated = await ref.read(apiClientProvider).removeCartItem(cartItemId);
       CartPricingModel? pricing;
       if (updated.items.isNotEmpty) {
-        pricing = await ref.read(apiClientProvider).getCheckoutEstimate().catchError((_) => null);
+        try {
+          pricing = await ref.read(apiClientProvider).getCheckoutEstimate();
+        } catch (_) {}
       }
       if (mounted) {
         setState(() {

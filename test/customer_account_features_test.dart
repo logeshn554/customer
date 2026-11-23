@@ -5,7 +5,6 @@ import 'package:allgo_mobile_shared/allgo_mobile_shared.dart';
 import 'package:allgo_customer_mobile/src/screens/account_screen.dart';
 import 'package:allgo_customer_mobile/src/screens/edit_profile_screen.dart';
 import 'package:allgo_customer_mobile/src/screens/privacy_security_screen.dart';
-import 'package:allgo_customer_mobile/src/components/language_selection_sheet.dart';
 
 void main() {
   group('Customer Account Missing Features Tests', () {

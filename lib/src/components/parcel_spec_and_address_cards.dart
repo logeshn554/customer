@@ -17,7 +17,7 @@ class ParcelSpecAndAddressCards extends StatelessWidget {
   final ValueChanged<double> onWeightChanged;
   final ParcelQuote? quote;
   final bool isQuoting;
-  final VoidCallback onGetQuote;
+  final VoidCallback? onGetQuote;
 
   final String selectedVehicleType;
   final ValueChanged<String>? onSelectVehicle;
@@ -39,9 +39,9 @@ class ParcelSpecAndAddressCards extends StatelessWidget {
     required this.onSelectCategory,
     required this.weightKg,
     required this.onWeightChanged,
-    required this.quote,
-    required this.isQuoting,
-    required this.onGetQuote,
+    this.quote,
+    this.isQuoting = false,
+    this.onGetQuote,
     this.selectedVehicleType = 'TWO_WHEELER',
     this.onSelectVehicle,
     this.isFragile = false,
@@ -248,11 +248,13 @@ class ParcelSpecAndAddressCards extends StatelessWidget {
         ),
         const SizedBox(height: 12),
 
-        AllGoButton(
-          label: 'Calculate Fare Estimate',
-          isLoading: isQuoting,
-          onPressed: onGetQuote,
-        ),
+        if (onGetQuote != null) ...[
+          AllGoButton(
+            label: 'Calculate Fare Estimate',
+            isLoading: isQuoting,
+            onPressed: onGetQuote,
+          ),
+        ],
         if (quote != null) ...[
           const SizedBox(height: 12),
           Card(

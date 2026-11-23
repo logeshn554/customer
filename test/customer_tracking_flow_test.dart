@@ -19,36 +19,26 @@ void main() {
       expect(find.text('Live Tracking'), findsOneWidget);
     });
 
-    testWidgets('LiveTripTrackingBottomSheet displays OTP, ETA and driver details correctly', (tester) async {
-      final mockJob = DeliveryJobModel(
-        id: 'job_test_tracking_100',
-        orderId: 'ord_sample_101',
-        orderNumber: 'AG-2026-9999',
-        status: 'OUT_FOR_DELIVERY',
-        pickupAddress: 'T. Nagar, Chennai',
-        deliveryAddress: 'Velachery, Chennai',
-        deliveryOtp: '7412',
-        driverName: 'Karthik Raja',
-        driverPhone: '+919988776655',
-        driverVehicleNumber: 'TN 09 AB 1234',
-        estimatedMinutesRemaining: 12,
-        estimatedDeliveryTime: DateTime.now().add(const Duration(minutes: 12)),
-        items: const [],
-      );
-
+    testWidgets('LiveTripTrackingBottomSheet displays OTP and tracking details correctly', (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: Scaffold(
-            body: LiveTripTrackingBottomSheet(job: mockJob),
+            body: LiveTripTrackingBottomSheet(
+              status: 'ON_THE_WAY',
+              pickupAddress: 'T. Nagar, Chennai',
+              dropoffAddress: 'Velachery, Chennai',
+              deliveryOtp: '7412',
+              driverLatitude: 13.0827,
+              driverLongitude: 80.2707,
+              driverSpeedMps: 8.5,
+            ),
           ),
         ),
       );
 
-      expect(find.text('Karthik Raja'), findsOneWidget);
-      expect(find.text('TN 09 AB 1234'), findsOneWidget);
+      expect(find.text('Live Order Tracking'), findsOneWidget);
       expect(find.text('7412'), findsOneWidget);
-      expect(find.text('12 mins'), findsOneWidget);
-      expect(find.text('Delivery PIN'), findsOneWidget);
+      expect(find.text('Driver WebSocket Telemetry Streaming'), findsOneWidget);
     });
   });
 }

@@ -69,12 +69,12 @@ class _FavoriteAndRecentStoresScreenState extends ConsumerState<FavoriteAndRecen
           ),
           child: const Icon(Icons.storefront, color: AllGoColors.primary),
         ),
-        title: Text(outlet.name, style: AllGoTypography.bodyLarge.copyWith(fontWeight: FontWeight.bold)),
+        title: Text(outlet.outletName, style: AllGoTypography.bodyLarge.copyWith(fontWeight: FontWeight.bold)),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 2),
-            Text(outlet.address, style: AllGoTypography.caption, maxLines: 1, overflow: TextOverflow.ellipsis),
+            Text(outlet.address ?? '', style: AllGoTypography.caption, maxLines: 1, overflow: TextOverflow.ellipsis),
             const SizedBox(height: 4),
             Row(
               children: [
@@ -105,7 +105,7 @@ class _FavoriteAndRecentStoresScreenState extends ConsumerState<FavoriteAndRecen
             MaterialPageRoute(
               builder: (_) => OutletCatalogScreen(
                 outletId: outlet.id,
-                outletName: outlet.name,
+                outletName: outlet.outletName,
               ),
             ),
           ).then((_) => _loadStores());

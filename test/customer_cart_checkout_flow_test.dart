@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:allgo_mobile_shared/allgo_mobile_shared.dart';
 import 'package:allgo_customer_mobile/src/screens/cart_screen.dart';
 import 'package:allgo_customer_mobile/src/screens/checkout_screen.dart';
-import 'package:allgo_customer_mobile/src/components/cart_empty_state.dart';
 import 'package:allgo_customer_mobile/src/components/checkout_payment_selector.dart';
 
 void main() {
@@ -49,7 +48,7 @@ void main() {
           home: Scaffold(
             body: CheckoutPaymentSelector(
               selectedMethod: selected,
-              onMethodChanged: (method) => selected = method,
+              onSelectMethod: (method) => selected = method,
             ),
           ),
         ),

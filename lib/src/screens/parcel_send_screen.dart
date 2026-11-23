@@ -323,11 +323,13 @@ class _ParcelSendScreenState extends ConsumerState<ParcelSendScreen> with Single
                   parcel: _activeParcel!,
                   isCancelling: _isCancelling,
                   onCancel: _handleCancelParcel,
+                  onRefresh: _loadHistory,
                 )
               : ParcelHistoryView(
                   isLoading: _isLoadingHistory,
-                  history: _history,
+                  parcels: _history,
                   onRefresh: _loadHistory,
+                  onSelect: (p) => setState(() => _activeParcel = p),
                 ),
         ],
       ),

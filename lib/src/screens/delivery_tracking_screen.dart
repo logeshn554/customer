@@ -129,7 +129,7 @@ class _DeliveryTrackingScreenState
           flat: true,
           anchor: const Offset(0.5, 0.5),
           infoWindow: InfoWindow(
-            title: _job?.assignedPartner?.user.fullName ?? 'Delivery Partner',
+            title: _job?.assignedPartner?.name ?? 'Delivery Partner',
             snippet: _speedMps != null ? 'Speed: ${(_speedMps! * 3.6).toStringAsFixed(1)} km/h' : 'En route',
           ),
           icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),

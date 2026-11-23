@@ -78,7 +78,12 @@ class _PrivacySecurityScreenState extends ConsumerState<PrivacySecurityScreen> {
               'View AllGo Data Protection and Privacy Policy',
               Icons.policy_outlined,
               () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const LegalPolicyViewerScreen(policyType: PolicyType.privacyPolicy)),
+                MaterialPageRoute(
+                  builder: (_) => const LegalPolicyViewerScreen(
+                    title: 'Privacy Policy',
+                    markdownContent: '# AllGo Privacy Policy\n\nUnder the Digital Personal Data Protection Act (DPDP) 2023, your personal data and location data are collected solely for delivery and ride fulfillment. You have the right to request access, correction, or deletion of your data at any time.',
+                  ),
+                ),
               ),
             ),
             _buildActionTile(
@@ -86,7 +91,12 @@ class _PrivacySecurityScreenState extends ConsumerState<PrivacySecurityScreen> {
               'View Master Service Terms & Conditions',
               Icons.description_outlined,
               () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const LegalPolicyViewerScreen(policyType: PolicyType.termsAndConditions)),
+                MaterialPageRoute(
+                  builder: (_) => const LegalPolicyViewerScreen(
+                    title: 'Terms & Conditions',
+                    markdownContent: '# AllGo Master Terms & Conditions\n\nAll bookings, shopping orders, rides, and driver hires are governed by the AllGo service terms. Orders are fulfilled directly by verified merchant outlets and certified delivery partners.',
+                  ),
+                ),
               ),
             ),
             _buildActionTile(
@@ -95,8 +105,9 @@ class _PrivacySecurityScreenState extends ConsumerState<PrivacySecurityScreen> {
               Icons.security_update_good_outlined,
               () => PermissionRationaleDialog.show(
                 context,
-                permissionTitle: 'Device Permissions',
-                purposeDescription: 'AllGo uses Location, Notification, and Camera permissions to ensure delivery routing, order status alerts, and QR code handovers.',
+                title: 'Device Permissions',
+                rationale: 'AllGo uses Location, Notification, and Camera permissions to ensure delivery routing, order status alerts, and QR code handovers.',
+                icon: Icons.security_outlined,
               ),
             ),
             const SizedBox(height: 20),
