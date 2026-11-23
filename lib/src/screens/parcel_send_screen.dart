@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:allgo_mobile_shared/allgo_mobile_shared.dart';
 
 import '../components/parcel_spec_and_address_cards.dart';
 import '../components/parcel_active_tracking_card.dart';
 import '../components/parcel_history_view.dart';
+import 'map_coordinate_picker_modal.dart';
 
 class ParcelSendScreen extends ConsumerStatefulWidget {
   final String? activeParcelId;
@@ -19,13 +21,18 @@ class ParcelSendScreen extends ConsumerStatefulWidget {
 class _ParcelSendScreenState extends ConsumerState<ParcelSendScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
-  final _senderNameCtrl = TextEditingController(text: 'Ramesh Kumar');
-  final _senderPhoneCtrl = TextEditingController(text: '+919876543210');
-  final _pickupAddressCtrl = TextEditingController(text: 'Flat 4A, Green Garden Apts, Anna Nagar');
+  late TextEditingController _senderNameCtrl;
+  late TextEditingController _senderPhoneCtrl;
+  final _pickupAddressCtrl = TextEditingController(text: 'Current Location');
   final _recipientNameCtrl = TextEditingController();
   final _recipientPhoneCtrl = TextEditingController();
   final _dropoffAddressCtrl = TextEditingController();
   final _descriptionCtrl = TextEditingController();
+
+  double _pickupLat = 13.0827;
+  double _pickupLng = 80.2707;
+  double _dropoffLat = 13.0405;
+  double _dropoffLng = 80.2337;
 
   String _selectedServiceCode = 'STANDARD';
   String _selectedCategory = 'DOCUMENTS';
@@ -45,11 +52,50 @@ class _ParcelSendScreenState extends ConsumerState<ParcelSendScreen> with Single
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+
+    final user = ref.read(currentUserProvider);
+    _senderNameCtrl = TextEditingController(text: user?.fullName ?? '');
+    _senderPhoneCtrl = TextEditingController(text: user?.phoneNumber ?? '');
+
     if (widget.activeParcelId != null) {
       _loadActiveParcel(widget.activeParcelId!);
     }
+    _initPickupAddress();
     _loadHistory();
     _startPolling();
+  }
+
+  Future<void> _initPickupAddress() async {
+    try {
+      final addresses = await ref.read(apiClientProvider).listCustomerAddresses();
+      if (addresses.isNotEmpty && mounted) {
+        final def = addresses.firstWhere((a) => a.isDefault, orElse: () => addresses.first);
+        _pickupAddressCtrl.text = '${def.addressLine1}, ${def.city}';
+        _pickupLat = def.latitude;
+        _pickupLng = def.longitude;
+        return;
+      }
+    } catch (_) {}
+
+    try {
+      LocationPermission perm = await Geolocator.checkPermission();
+      if (perm == LocationPermission.denied) {
+        perm = await Geolocator.requestPermission();
+      }
+      if (perm == LocationPermission.whileInUse || perm == LocationPermission.always) {
+        final pos = await Geolocator.getCurrentPosition(timeLimit: const Duration(seconds: 4));
+        if (mounted) {
+          _pickupLat = pos.latitude;
+          _pickupLng = pos.longitude;
+          try {
+            final rev = await ref.read(apiClientProvider).reverseGeocode(pos.latitude, pos.longitude);
+            _pickupAddressCtrl.text = rev.formattedAddress;
+          } catch (_) {
+            _pickupAddressCtrl.text = 'Current GPS Location';
+          }
+        }
+      }
+    } catch (_) {}
   }
 
   @override
@@ -102,10 +148,10 @@ class _ParcelSendScreenState extends ConsumerState<ParcelSendScreen> with Single
         'serviceLevel': _selectedServiceCode,
         'packageCategory': _selectedCategory,
         'weightKg': _weightKg,
-        'pickupLatitude': 13.0827,
-        'pickupLongitude': 80.2707,
-        'dropoffLatitude': 13.0405,
-        'dropoffLongitude': 80.2337,
+        'pickupLatitude': _pickupLat,
+        'pickupLongitude': _pickupLng,
+        'dropoffLatitude': _dropoffLat,
+        'dropoffLongitude': _dropoffLng,
       });
       if (mounted) setState(() => _quote = quote);
     } catch (e) {
@@ -124,13 +170,13 @@ class _ParcelSendScreenState extends ConsumerState<ParcelSendScreen> with Single
         'senderName': _senderNameCtrl.text,
         'senderPhone': _senderPhoneCtrl.text,
         'pickupAddress': _pickupAddressCtrl.text,
-        'pickupLatitude': 13.0827,
-        'pickupLongitude': 80.2707,
+        'pickupLatitude': _pickupLat,
+        'pickupLongitude': _pickupLng,
         'recipientName': _recipientNameCtrl.text,
         'recipientPhone': _recipientPhoneCtrl.text,
         'dropoffAddress': _dropoffAddressCtrl.text,
-        'dropoffLatitude': 13.0405,
-        'dropoffLongitude': 80.2337,
+        'dropoffLatitude': _dropoffLat,
+        'dropoffLongitude': _dropoffLng,
         'packageDescription': _descriptionCtrl.text,
       });
       if (mounted) {
@@ -178,7 +224,8 @@ class _ParcelSendScreenState extends ConsumerState<ParcelSendScreen> with Single
             children: [
               ParcelSpecAndAddressCards(
                 selectedServiceCode: _selectedServiceCode,
-                onSelectService: (s) => setState(() => _selectedServiceCode = s),
+                selectedCategory: _selectedCategory,
+                weightKg: _weightKg,
                 senderNameCtrl: _senderNameCtrl,
                 senderPhoneCtrl: _senderPhoneCtrl,
                 pickupAddressCtrl: _pickupAddressCtrl,
@@ -186,20 +233,42 @@ class _ParcelSendScreenState extends ConsumerState<ParcelSendScreen> with Single
                 recipientPhoneCtrl: _recipientPhoneCtrl,
                 dropoffAddressCtrl: _dropoffAddressCtrl,
                 descriptionCtrl: _descriptionCtrl,
-                selectedCategory: _selectedCategory,
+                onSelectService: (s) => setState(() => _selectedServiceCode = s),
                 onSelectCategory: (c) => setState(() => _selectedCategory = c),
-                weightKg: _weightKg,
                 onWeightChanged: (w) => setState(() => _weightKg = w),
-                quote: _quote,
-                isQuoting: _isQuoting,
-                onGetQuote: _handleGetQuote,
+              ),
+              const SizedBox(height: 16),
+              AllGoButton(
+                label: 'Get Cost & ETA Estimate',
+                isLoading: _isQuoting,
+                onPressed: _handleGetQuote,
               ),
               if (_quote != null) ...[
                 const SizedBox(height: 16),
-                AllGoButton(
-                  label: 'Book Courier Handover',
-                  isLoading: _isBooking,
-                  onPressed: _handleBookParcel,
+                Card(
+                  color: Colors.deepPurple.shade50,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text('Fare Estimate:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                            Text('₹${_quote!.fareInr}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Colors.deepPurple)),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text('Distance: ${_quote!.distanceKm} km | Est. Delivery: ${_quote!.estimatedDurationMinutes} mins', style: const TextStyle(fontSize: 12)),
+                        const SizedBox(height: 16),
+                        AllGoButton(
+                          label: 'Confirm & Dispatch Porter',
+                          isLoading: _isBooking,
+                          onPressed: _handleBookParcel,
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ],
             ],
@@ -209,13 +278,11 @@ class _ParcelSendScreenState extends ConsumerState<ParcelSendScreen> with Single
                   parcel: _activeParcel!,
                   isCancelling: _isCancelling,
                   onCancel: _handleCancelParcel,
-                  onRefresh: () => _loadActiveParcel(_activeParcel!.id),
                 )
               : ParcelHistoryView(
-                  parcels: _history,
                   isLoading: _isLoadingHistory,
+                  history: _history,
                   onRefresh: _loadHistory,
-                  onSelect: (p) => setState(() => _activeParcel = p),
                 ),
         ],
       ),

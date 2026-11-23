@@ -59,7 +59,7 @@ class _HireDriverScreenState extends ConsumerState<HireDriverScreen> {
         if (mounted) {
           _reportingLat = pos.latitude;
           _reportingLng = pos.longitude;
-          _reportingCtrl.text = 'Current GPS Location (${pos.latitude.toFixed(4)}, ${pos.longitude.toFixed(4)})';
+          _reportingCtrl.text = 'Current GPS Location (${pos.latitude.toStringAsFixed(4)}, ${pos.longitude.toStringAsFixed(4)})';
           return;
         }
       }

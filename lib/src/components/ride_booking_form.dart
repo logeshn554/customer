@@ -11,6 +11,8 @@ class RideBookingForm extends StatelessWidget {
   final bool isBooking;
   final VoidCallback onGetEstimate;
   final VoidCallback onConfirmRide;
+  final VoidCallback? onPickPickupOnMap;
+  final VoidCallback? onPickDestOnMap;
 
   const RideBookingForm({
     super.key,
@@ -23,9 +25,11 @@ class RideBookingForm extends StatelessWidget {
     required this.isBooking,
     required this.onGetEstimate,
     required this.onConfirmRide,
+    this.onPickPickupOnMap,
+    this.onPickDestOnMap,
   });
 
-  Widget _buildCategoryTile(String title, String subtitle, String category, IconData icon) {
+  Widget _buildCategoryTile(String title, String subtitle, String category, IconData icon, String? fare) {
     final isSelected = selectedCategory == category;
     return GestureDetector(
       onTap: () => onSelectCategory(category),
@@ -50,6 +54,11 @@ class RideBookingForm extends StatelessWidget {
                 ],
               ),
             ),
+            if (fare != null)
+              Text(
+                fare,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AllGoColors.primary),
+              ),
           ],
         ),
       ),
@@ -58,6 +67,8 @@ class RideBookingForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final quoteTotal = estimateData?['totalFareInr'] ?? estimateData?['fareInr'];
+
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -66,9 +77,41 @@ class RideBookingForm extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                AllGoTextField(label: 'Pickup Location', controller: pickupCtrl, prefixIcon: const Icon(Icons.my_location, color: Colors.green)),
+                Row(
+                  children: [
+                    Expanded(
+                      child: AllGoTextField(
+                        label: 'Pickup Location',
+                        controller: pickupCtrl,
+                        prefixIcon: const Icon(Icons.my_location, color: Colors.green),
+                      ),
+                    ),
+                    if (onPickPickupOnMap != null)
+                      IconButton(
+                        icon: const Icon(Icons.map, color: AllGoColors.primary),
+                        tooltip: 'Pin on Google Map',
+                        onPressed: onPickPickupOnMap,
+                      ),
+                  ],
+                ),
                 const SizedBox(height: 12),
-                AllGoTextField(label: 'Destination', controller: destCtrl, prefixIcon: const Icon(Icons.location_on, color: Colors.red)),
+                Row(
+                  children: [
+                    Expanded(
+                      child: AllGoTextField(
+                        label: 'Destination',
+                        controller: destCtrl,
+                        prefixIcon: const Icon(Icons.location_on, color: Colors.red),
+                      ),
+                    ),
+                    if (onPickDestOnMap != null)
+                      IconButton(
+                        icon: const Icon(Icons.map, color: AllGoColors.primary),
+                        tooltip: 'Pin on Google Map',
+                        onPressed: onPickDestOnMap,
+                      ),
+                  ],
+                ),
                 const SizedBox(height: 12),
                 AllGoButton(label: 'Get Fare Estimate', isLoading: isEstimating, onPressed: onGetEstimate),
               ],
@@ -78,30 +121,38 @@ class RideBookingForm extends StatelessWidget {
         const SizedBox(height: 16),
         Text('Choose Ride Option', style: AllGoTypography.heading3.copyWith(fontSize: 16)),
         const SizedBox(height: 12),
-        _buildCategoryTile('Bike Taxi', 'Fastest through traffic • 1 Person', 'BIKE_TAXI', Icons.two_wheeler),
-        _buildCategoryTile('Auto Rickshaw', 'Affordable doorstep rides • 3 People', 'AUTO', Icons.electric_rickshaw),
-        _buildCategoryTile('Cab Economy', 'Air-conditioned compact rides • 4 People', 'CAB_ECONOMY', Icons.directions_car),
-        _buildCategoryTile('Cab Premium', 'Spacious sedans & top drivers', 'CAB_PREMIUM', Icons.local_taxi),
+        _buildCategoryTile('Bike Taxi', 'Fastest for single rider in traffic', 'BIKE', Icons.two_wheeler, quoteTotal != null && selectedCategory == 'BIKE' ? '₹$quoteTotal' : null),
+        _buildCategoryTile('Auto Rickshaw', 'Affordable doorstep 3-wheeler', 'AUTO', Icons.electric_rickshaw, quoteTotal != null && selectedCategory == 'AUTO' ? '₹$quoteTotal' : null),
+        _buildCategoryTile('Economy Cab', 'AC Mini & Hatchback', 'CAB_ECONOMY', Icons.directions_car, quoteTotal != null && selectedCategory == 'CAB_ECONOMY' ? '₹$quoteTotal' : null),
+        _buildCategoryTile('Premium Cab', 'Comfort Sedan & SUV', 'CAB_PREMIUM', Icons.local_taxi, quoteTotal != null && selectedCategory == 'CAB_PREMIUM' ? '₹$quoteTotal' : null),
         if (estimateData != null) ...[
           const SizedBox(height: 16),
           Card(
-            color: Colors.teal.shade50,
+            color: Colors.green.shade50,
             child: Padding(
               padding: const EdgeInsets.all(16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Estimated Fare', style: AllGoTypography.caption.copyWith(color: Colors.teal.shade900)),
-                      Text('₹${estimateData!['estimatedFareInr'] ?? 150}', style: AllGoTypography.heading2.copyWith(color: Colors.teal.shade900)),
+                      const Text('Estimated Fare:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                      Text(
+                        '₹${estimateData!['totalFareInr'] ?? estimateData!['fareInr'] ?? "---"}',
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.green),
+                      ),
                     ],
                   ),
-                  ElevatedButton(
-                    onPressed: isBooking ? null : onConfirmRide,
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.teal.shade800, foregroundColor: Colors.white),
-                    child: const Text('Confirm Ride'),
+                  const SizedBox(height: 4),
+                  if (estimateData!['distanceKm'] != null)
+                    Text('Estimated Distance: ${estimateData!['distanceKm']} km | Duration: ${estimateData!['durationMinutes'] ?? 15} mins', style: const TextStyle(fontSize: 12)),
+                  const SizedBox(height: 14),
+                  AllGoButton(
+                    label: 'Book Now (${selectedCategory.replaceAll('_', ' ')})',
+                    icon: Icons.check,
+                    isLoading: isBooking,
+                    onPressed: onConfirmRide,
                   ),
                 ],
               ),

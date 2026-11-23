@@ -10,7 +10,6 @@ class WalletScreen extends ConsumerStatefulWidget {
 }
 
 class _WalletScreenState extends ConsumerState<WalletScreen> {
-  final ApiClient _apiClient = ApiClient();
   bool _isLoading = true;
   double _balance = 0.00;
   double _promoBalance = 0.00;
@@ -31,8 +30,9 @@ class _WalletScreenState extends ConsumerState<WalletScreen> {
     });
 
     try {
-      final walletData = await _apiClient.getCustomerWallet();
-      final txData = await _apiClient.getCustomerWalletTransactions();
+      final client = ref.read(apiClientProvider);
+      final walletData = await client.getCustomerWallet();
+      final txData = await client.getCustomerWalletTransactions();
       if (mounted) {
         setState(() {
           _balance = (walletData['balanceInr'] as num?)?.toDouble() ?? 0.0;
@@ -94,7 +94,8 @@ class _WalletScreenState extends ConsumerState<WalletScreen> {
       final amt = double.tryParse(amountController.text) ?? 0.0;
       if (amt > 0) {
         try {
-          await _apiClient.topupCustomerWallet(amt);
+          final client = ref.read(apiClientProvider);
+          await client.topupCustomerWallet(amt);
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Successfully credited ₹$amt to wallet!')),

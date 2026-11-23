@@ -3,10 +3,12 @@ import 'package:allgo_mobile_shared/allgo_mobile_shared.dart';
 
 class CheckoutBillSummary extends StatelessWidget {
   final CartPricingModel pricing;
+  final int storeCount;
 
   const CheckoutBillSummary({
     super.key,
     required this.pricing,
+    this.storeCount = 1,
   });
 
   Widget _buildRow(String label, String value, {bool isBold = false, Color? color}) {
@@ -34,11 +36,28 @@ class CheckoutBillSummary extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Bill Details', style: AllGoTypography.heading3.copyWith(fontSize: 15)),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Bill Details', style: AllGoTypography.heading3.copyWith(fontSize: 15)),
+              if (storeCount > 1)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: AllGoColors.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    '$storeCount Stores Combined',
+                    style: const TextStyle(color: AllGoColors.primary, fontSize: 11, fontWeight: FontWeight.bold),
+                  ),
+                ),
+            ],
+          ),
           const SizedBox(height: 12),
-          _buildRow('Item Total', '₹${pricing.subtotalInr.toStringAsFixed(2)}'),
-          _buildRow('Delivery Partner Fee', '₹${pricing.deliveryFeeInr.toStringAsFixed(2)}'),
-          _buildRow('Packaging Charges', '₹${pricing.packagingFeeInr.toStringAsFixed(2)}'),
+          _buildRow(storeCount > 1 ? 'Combined Items Total' : 'Item Total', '₹${pricing.subtotalInr.toStringAsFixed(2)}'),
+          _buildRow(storeCount > 1 ? 'Combined Delivery Fees' : 'Delivery Partner Fee', '₹${pricing.deliveryFeeInr.toStringAsFixed(2)}'),
+          _buildRow(storeCount > 1 ? 'Combined Packaging Fees' : 'Packaging Charges', '₹${pricing.packagingFeeInr.toStringAsFixed(2)}'),
           _buildRow('Platform Taxes (GST)', '₹${pricing.taxInr.toStringAsFixed(2)}'),
           if (pricing.discountInr > 0)
             _buildRow('Promotion Discount', '-₹${pricing.discountInr.toStringAsFixed(2)}', color: AllGoColors.success),

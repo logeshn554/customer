@@ -122,15 +122,109 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Text('Items from ${_cart!.outletName ?? "Restaurant"}', style: AllGoTypography.heading3.copyWith(fontSize: 15)),
-          const SizedBox(height: 12),
-          ..._cart!.items.map((item) {
-            return CartItemCard(
-              item: item,
-              onQuantityChanged: (qty) => _updateQuantity(item.id, qty),
-              onRemove: () => _removeItem(item.id),
-            );
-          }),
+          if (_cart!.outlets.length > 1) ...[
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              margin: const EdgeInsets.only(bottom: 16),
+              decoration: BoxDecoration(
+                color: AllGoColors.primary.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AllGoColors.primary.withOpacity(0.2)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.shopping_bag_outlined, color: AllGoColors.primary, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Multi-Merchant Cart: ${_cart!.outlets.length} stores combined into 1 delivery order',
+                      style: AllGoTypography.bodySmall.copyWith(
+                        color: AllGoColors.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            for (final outlet in _cart!.outlets) ...[
+              Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AllGoColors.surface,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AllGoColors.divider),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          outlet.verticalType == 'GROCERY'
+                              ? Icons.local_grocery_store_outlined
+                              : (outlet.verticalType == 'HOME_MADE'
+                                  ? Icons.home_outlined
+                                  : Icons.restaurant_outlined),
+                          color: AllGoColors.primary,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            outlet.name,
+                            style: AllGoTypography.heading3.copyWith(fontSize: 16),
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: AllGoColors.background,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            outlet.verticalType,
+                            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (outlet.address != null) ...[
+                      const SizedBox(height: 2),
+                      Text(outlet.address!, style: AllGoTypography.caption),
+                    ],
+                    const Divider(height: 16),
+                    ...outlet.items.map((item) {
+                      return CartItemCard(
+                        item: item,
+                        onQuantityChanged: (qty) => _updateQuantity(item.id, qty),
+                        onRemove: () => _removeItem(item.id),
+                      );
+                    }),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Items Total: ₹${outlet.subtotalInr.toStringAsFixed(2)}', style: AllGoTypography.bodySmall),
+                        Text('Packaging: ₹${outlet.packagingFeeInr.toStringAsFixed(2)}', style: AllGoTypography.bodySmall),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ] else ...[
+            Text('Items from ${_cart!.outletName ?? "Store"}', style: AllGoTypography.heading3.copyWith(fontSize: 15)),
+            const SizedBox(height: 12),
+            ..._cart!.items.map((item) {
+              return CartItemCard(
+                item: item,
+                onQuantityChanged: (qty) => _updateQuantity(item.id, qty),
+                onRemove: () => _removeItem(item.id),
+              );
+            }),
+          ],
           const SizedBox(height: 16),
           if (_pricing != null) ...[
             CartBillDetails(pricing: _pricing!),

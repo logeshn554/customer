@@ -125,7 +125,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 ),
                 const SizedBox(height: 16),
                 if (_pricing != null) ...[
-                  CheckoutBillSummary(pricing: _pricing!),
+                  CheckoutBillSummary(
+                    pricing: _pricing!,
+                    storeCount: _cart?.outlets.length ?? 1,
+                  ),
                   const SizedBox(height: 24),
                   AllGoButton(
                     label: 'Pay ₹${_pricing!.finalTotalInr.toStringAsFixed(0)} & Place Order',

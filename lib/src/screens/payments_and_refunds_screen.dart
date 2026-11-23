@@ -10,7 +10,6 @@ class PaymentsAndRefundsScreen extends ConsumerStatefulWidget {
 }
 
 class _PaymentsAndRefundsScreenState extends ConsumerState<PaymentsAndRefundsScreen> with SingleTickerProviderStateMixin {
-  final ApiClient _apiClient = ApiClient();
   late TabController _tabController;
   bool _isLoading = true;
   List<dynamic> _payments = [];
@@ -37,8 +36,9 @@ class _PaymentsAndRefundsScreenState extends ConsumerState<PaymentsAndRefundsScr
     });
 
     try {
-      final pList = await _apiClient.getCustomerPayments();
-      final rList = await _apiClient.getCustomerRefunds();
+      final client = ref.read(apiClientProvider);
+      final pList = await client.getCustomerPayments();
+      final rList = await client.getCustomerRefunds();
       if (mounted) {
         setState(() {
           _payments = pList;

@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:allgo_mobile_shared/allgo_mobile_shared.dart';
 
 import '../components/ride_booking_form.dart';
 import '../components/active_ride_tracking_view.dart';
+import 'map_coordinate_picker_modal.dart';
 
 class RideBookingScreen extends ConsumerStatefulWidget {
   final String? activeRideId;
@@ -16,8 +18,13 @@ class RideBookingScreen extends ConsumerStatefulWidget {
 }
 
 class _RideBookingScreenState extends ConsumerState<RideBookingScreen> {
-  final _pickupCtrl = TextEditingController(text: 'Current Location (Anna Nagar, Chennai)');
-  final _destCtrl = TextEditingController(text: 'Chennai Central Railway Station');
+  final _pickupCtrl = TextEditingController(text: 'Current Location');
+  final _destCtrl = TextEditingController();
+
+  double _pickupLat = 13.0827;
+  double _pickupLng = 80.2707;
+  double _destLat = 13.0405;
+  double _destLng = 80.2337;
 
   String _selectedCategory = 'AUTO';
   Map<String, dynamic>? _estimateData;
@@ -35,7 +42,44 @@ class _RideBookingScreenState extends ConsumerState<RideBookingScreen> {
     if (widget.activeRideId != null) {
       _loadRide(widget.activeRideId!);
     }
+    _initPickupLocation();
     _startPolling();
+  }
+
+  Future<void> _initPickupLocation() async {
+    try {
+      final addresses = await ref.read(apiClientProvider).listCustomerAddresses();
+      if (addresses.isNotEmpty && mounted) {
+        final def = addresses.firstWhere((a) => a.isDefault, orElse: () => addresses.first);
+        _pickupCtrl.text = '${def.addressLine1}, ${def.city}';
+        _pickupLat = def.latitude;
+        _pickupLng = def.longitude;
+        return;
+      }
+    } catch (_) {}
+
+    try {
+      LocationPermission perm = await Geolocator.checkPermission();
+      if (perm == LocationPermission.denied) {
+        perm = await Geolocator.requestPermission();
+      }
+      if (perm == LocationPermission.whileInUse || perm == LocationPermission.always) {
+        final pos = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high,
+          timeLimit: const Duration(seconds: 4),
+        );
+        if (mounted) {
+          _pickupLat = pos.latitude;
+          _pickupLng = pos.longitude;
+          try {
+            final rev = await ref.read(apiClientProvider).reverseGeocode(pos.latitude, pos.longitude);
+            _pickupCtrl.text = rev.formattedAddress;
+          } catch (_) {
+            _pickupCtrl.text = 'Current GPS Location';
+          }
+        }
+      }
+    } catch (_) {}
   }
 
   @override
@@ -61,15 +105,59 @@ class _RideBookingScreenState extends ConsumerState<RideBookingScreen> {
     } catch (_) {}
   }
 
+  Future<void> _pickPickupOnMap() async {
+    final res = await showModalBottomSheet<MapLocationResult>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => MapCoordinatePickerModal(
+        initialLat: _pickupLat,
+        initialLng: _pickupLng,
+      ),
+    );
+    if (res != null && mounted) {
+      setState(() {
+        _pickupLat = res.latitude;
+        _pickupLng = res.longitude;
+        _pickupCtrl.text = res.addressText;
+      });
+    }
+  }
+
+  Future<void> _pickDestOnMap() async {
+    final res = await showModalBottomSheet<MapLocationResult>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => MapCoordinatePickerModal(
+        initialLat: _destLat,
+        initialLng: _destLng,
+      ),
+    );
+    if (res != null && mounted) {
+      setState(() {
+        _destLat = res.latitude;
+        _destLng = res.longitude;
+        _destCtrl.text = res.addressText;
+      });
+    }
+  }
+
   Future<void> _handleGetEstimate() async {
+    if (_destCtrl.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter or pin destination location')),
+      );
+      return;
+    }
     setState(() => _isEstimating = true);
     try {
       final res = await ref.read(apiClientProvider).estimateRideFare({
         'serviceType': _selectedCategory,
-        'pickupLatitude': 13.0827,
-        'pickupLongitude': 80.2707,
-        'destinationLatitude': 13.0837,
-        'destinationLongitude': 80.2750,
+        'pickupLatitude': _pickupLat,
+        'pickupLongitude': _pickupLng,
+        'destinationLatitude': _destLat,
+        'destinationLongitude': _destLng,
       });
       if (mounted) setState(() => _estimateData = res);
     } catch (e) {
@@ -86,10 +174,10 @@ class _RideBookingScreenState extends ConsumerState<RideBookingScreen> {
         'serviceType': _selectedCategory,
         'pickupAddress': _pickupCtrl.text,
         'destinationAddress': _destCtrl.text,
-        'pickupLatitude': 13.0827,
-        'pickupLongitude': 80.2707,
-        'destinationLatitude': 13.0837,
-        'destinationLongitude': 80.2750,
+        'pickupLatitude': _pickupLat,
+        'pickupLongitude': _pickupLng,
+        'destinationLatitude': _destLat,
+        'destinationLongitude': _destLng,
       });
       if (mounted) setState(() => _activeRide = ride);
     } catch (e) {
@@ -116,7 +204,11 @@ class _RideBookingScreenState extends ConsumerState<RideBookingScreen> {
     if (_activeRide == null) return;
     setState(() => _isTriggeringSos = true);
     try {
-      await ref.read(apiClientProvider).triggerRideSos(_activeRide!.id, latitude: 13.0827, longitude: 80.2707);
+      await ref.read(apiClientProvider).triggerRideSos(
+        _activeRide!.id,
+        latitude: _pickupLat,
+        longitude: _pickupLng,
+      );
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('EMERGENCY SOS ALERT BROADCASTED'), backgroundColor: Colors.red),
       );
@@ -159,6 +251,8 @@ class _RideBookingScreenState extends ConsumerState<RideBookingScreen> {
               isBooking: _isBooking,
               onGetEstimate: _handleGetEstimate,
               onConfirmRide: _handleConfirmRide,
+              onPickPickupOnMap: _pickPickupOnMap,
+              onPickDestOnMap: _pickDestOnMap,
             ),
     );
   }

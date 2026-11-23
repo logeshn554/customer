@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:allgo_mobile_shared/allgo_mobile_shared.dart';
+import 'unified_active_bookings_tray.dart';
 import '../screens/outlet_catalog_screen.dart';
 import '../screens/parcel_send_screen.dart';
 import '../screens/ride_booking_screen.dart';
 import '../screens/hire_driver_screen.dart';
+import '../screens/cart_screen.dart';
 
 class CustomerHomeTab extends StatelessWidget {
   final User? user;
   final List<DeliveryJobModel> activeDeliveries;
+  final List<UnifiedActiveBookingItem> unifiedBookings;
+  final String currentAddressLabel;
+  final double currentLatitude;
+  final double currentLongitude;
+  final VoidCallback onSelectAddress;
   final bool isLoading;
   final VoidCallback onRefresh;
   final void Function(int tabIndex) onNavigateTab;
@@ -16,6 +23,11 @@ class CustomerHomeTab extends StatelessWidget {
     super.key,
     required this.user,
     required this.activeDeliveries,
+    required this.unifiedBookings,
+    required this.currentAddressLabel,
+    required this.currentLatitude,
+    required this.currentLongitude,
+    required this.onSelectAddress,
     required this.isLoading,
     required this.onRefresh,
     required this.onNavigateTab,
@@ -48,18 +60,18 @@ class CustomerHomeTab extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           onTap: onTap,
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(14),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(10),
+                  padding: const EdgeInsets.all(9),
                   decoration: BoxDecoration(
                     color: color.withOpacity(0.12),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(icon, color: color, size: 24),
+                  child: Icon(icon, color: color, size: 22),
                 ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -68,12 +80,13 @@ class CustomerHomeTab extends StatelessWidget {
                       title,
                       style: AllGoTypography.bodyMedium.copyWith(
                         fontWeight: FontWeight.bold,
+                        fontSize: 13,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       subtitle,
-                      style: AllGoTypography.caption,
+                      style: AllGoTypography.caption.copyWith(fontSize: 10),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -94,35 +107,77 @@ class CustomerHomeTab extends StatelessWidget {
       child: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         children: [
-          // Greeting & Location bar
+          // Greeting & Interactive Location bar
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    InkWell(
+                      onTap: onSelectAddress,
+                      borderRadius: BorderRadius.circular(8),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 2.0),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.location_on, size: 16, color: AllGoColors.primary),
+                            const SizedBox(width: 4),
+                            Flexible(
+                              child: Text(
+                                currentAddressLabel,
+                                style: AllGoTypography.caption.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: AllGoColors.textPrimary,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const SizedBox(width: 2),
+                            const Icon(Icons.keyboard_arrow_down, size: 16, color: AllGoColors.textTertiary),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      user != null ? 'Hello, ${user?.fullName ?? user?.phoneNumber ?? "Partner"}' : 'Welcome to AllGo',
+                      style: AllGoTypography.heading2.copyWith(fontSize: 18),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              Row(
                 children: [
-                  Row(
-                    children: [
-                      const Icon(Icons.location_on, size: 16, color: AllGoColors.primary),
-                      const SizedBox(width: 4),
-                      Text('Chennai, Anna Nagar', style: AllGoTypography.caption.copyWith(fontWeight: FontWeight.bold)),
-                      const Icon(Icons.keyboard_arrow_down, size: 16, color: AllGoColors.textTertiary),
-                    ],
+                  IconButton(
+                    icon: const Icon(Icons.shopping_bag_outlined, color: AllGoColors.textPrimary),
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const CartScreen()),
+                      );
+                    },
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    user != null ? 'Hello, ${user?.phoneNumber ?? "Guest"}' : 'Welcome to AllGo',
-                    style: AllGoTypography.heading2.copyWith(fontSize: 20),
+                  CircleAvatar(
+                    backgroundColor: AllGoColors.primary.withOpacity(0.1),
+                    child: const Icon(Icons.person, color: AllGoColors.primary),
                   ),
                 ],
               ),
-              CircleAvatar(
-                backgroundColor: AllGoColors.primary.withOpacity(0.1),
-                child: const Icon(Icons.person, color: AllGoColors.primary),
-              ),
             ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
+
+          // Unified Active Bookings Tray
+          if (unifiedBookings.isNotEmpty)
+            UnifiedActiveBookingsTray(
+              bookings: unifiedBookings,
+              onRefresh: onRefresh,
+            ),
 
           // Promotional Super Banner
           Container(
@@ -164,9 +219,9 @@ class CustomerHomeTab extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
 
-          // Services Grid
+          // All Super-App Services Grid
           Text('All Services', style: AllGoTypography.heading3),
           const SizedBox(height: 12),
           GridView.count(
@@ -180,7 +235,7 @@ class CustomerHomeTab extends StatelessWidget {
               _buildServiceCard(
                 context,
                 'Food Delivery',
-                'Top restaurants & delicacies',
+                'Restaurants & Cloud Kitchens',
                 Icons.restaurant,
                 Colors.orange,
                 onTap: () => onNavigateTab(1),
@@ -196,7 +251,7 @@ class CustomerHomeTab extends StatelessWidget {
               _buildServiceCard(
                 context,
                 'City Parcel',
-                'Fast courier & package delivery',
+                'Porter-style cargo & couriers',
                 Icons.local_shipping,
                 Colors.deepPurple,
                 onTap: () {
@@ -208,7 +263,7 @@ class CustomerHomeTab extends StatelessWidget {
               _buildServiceCard(
                 context,
                 'Mobility Rides',
-                'Bike, Auto & Cab rides',
+                'Bike Taxi, Auto & Cabs',
                 Icons.directions_car,
                 Colors.teal,
                 onTap: () {
@@ -229,8 +284,17 @@ class CustomerHomeTab extends StatelessWidget {
                   );
                 },
               ),
+              _buildServiceCard(
+                context,
+                'Home Sellers',
+                'Homemade foods & snacks',
+                Icons.cookie,
+                Colors.pink,
+                onTap: () => onNavigateTab(1),
+              ),
             ],
           ),
+          const SizedBox(height: 24),
         ],
       ),
     );

@@ -10,7 +10,6 @@ class NotificationsScreen extends ConsumerStatefulWidget {
 }
 
 class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
-  final ApiClient _apiClient = ApiClient();
   bool _isLoading = true;
   List<dynamic> _notifications = [];
   int _unreadCount = 0;
@@ -24,7 +23,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
   Future<void> _loadNotifications() async {
     setState(() => _isLoading = true);
     try {
-      final res = await _apiClient.getNotifications(role: 'CUSTOMER');
+      final client = ref.read(apiClientProvider);
+      final res = await client.getNotifications(role: 'CUSTOMER');
       if (mounted) {
         setState(() {
           _notifications = (res['notifications'] as List<dynamic>?) ?? [];
@@ -39,14 +39,16 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
 
   Future<void> _markAllRead() async {
     try {
-      await _apiClient.markAllNotificationsRead(role: 'CUSTOMER');
+      final client = ref.read(apiClientProvider);
+      await client.markAllNotificationsRead(role: 'CUSTOMER');
       _loadNotifications();
     } catch (_) {}
   }
 
   Future<void> _markRead(String id) async {
     try {
-      await _apiClient.markNotificationRead(id, role: 'CUSTOMER');
+      final client = ref.read(apiClientProvider);
+      await client.markNotificationRead(id, role: 'CUSTOMER');
       _loadNotifications();
     } catch (_) {}
   }

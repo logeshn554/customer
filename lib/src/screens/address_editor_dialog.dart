@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:allgo_mobile_shared/allgo_mobile_shared.dart';
 import '../components/address_form_fields.dart';
 import 'map_coordinate_picker_modal.dart';
@@ -38,11 +39,51 @@ class _AddressEditorDialogState extends ConsumerState<AddressEditorDialog> {
     _line1Ctrl = TextEditingController(text: addr?.addressLine1 ?? '');
     _line2Ctrl = TextEditingController(text: addr?.addressLine2 ?? '');
     _landmarkCtrl = TextEditingController(text: addr?.landmark ?? '');
-    _cityCtrl = TextEditingController(text: addr?.city ?? 'Chennai');
+    _cityCtrl = TextEditingController(text: addr?.city ?? '');
     _postalCtrl = TextEditingController(text: addr?.postalCode ?? '');
-    _latitude = addr?.latitude ?? 13.0827;
-    _longitude = addr?.longitude ?? 80.2707;
+    _latitude = addr?.latitude ?? 0.0;
+    _longitude = addr?.longitude ?? 0.0;
     _isDefault = addr?.isDefault ?? false;
+
+    if (addr == null) {
+      _detectGpsLocation();
+    }
+  }
+
+  Future<void> _detectGpsLocation() async {
+    try {
+      LocationPermission perm = await Geolocator.checkPermission();
+      if (perm == LocationPermission.denied) {
+        perm = await Geolocator.requestPermission();
+      }
+      if (perm == LocationPermission.whileInUse || perm == LocationPermission.always) {
+        final pos = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high,
+          timeLimit: const Duration(seconds: 4),
+        );
+        if (mounted) {
+          setState(() {
+            _latitude = pos.latitude;
+            _longitude = pos.longitude;
+          });
+          _reverseGeocode(pos.latitude, pos.longitude);
+        }
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _reverseGeocode(double lat, double lng) async {
+    try {
+      final client = ref.read(apiClientProvider);
+      final res = await client.reverseGeocode(lat, lng);
+      if (mounted) {
+        setState(() {
+          if (_line1Ctrl.text.isEmpty && res.formattedAddress.isNotEmpty) {
+            _line1Ctrl.text = res.formattedAddress;
+          }
+        });
+      }
+    } catch (_) {}
   }
 
   @override

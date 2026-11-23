@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:allgo_mobile_shared/allgo_mobile_shared.dart';
 
 import '../components/live_trip_tracking_bottom_sheet.dart';
@@ -20,6 +21,7 @@ class DeliveryTrackingScreen extends ConsumerStatefulWidget {
 
 class _DeliveryTrackingScreenState
     extends ConsumerState<DeliveryTrackingScreen> {
+  GoogleMapController? _mapController;
   bool _isLoading = true;
   DeliveryJobModel? _job;
   Timer? _refreshTimer;
@@ -45,6 +47,7 @@ class _DeliveryTrackingScreenState
   @override
   void dispose() {
     _refreshTimer?.cancel();
+    _mapController?.dispose();
     super.dispose();
   }
 
@@ -66,6 +69,7 @@ class _DeliveryTrackingScreenState
             _speedMps = live.speedMps;
           }
         });
+        _snapCameraToDriver();
       }
     } catch (_) {
       if (mounted) {
@@ -109,14 +113,30 @@ class _DeliveryTrackingScreenState
 
   void _snapCameraToDriver() {
     if (_driverLat == null || _driverLng == null) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Camera centered on courier: ${_driverLat!.toStringAsFixed(4)}, ${_driverLng!.toStringAsFixed(4)}',
-        ),
-        duration: const Duration(seconds: 2),
-      ),
+    _mapController?.animateCamera(
+      CameraUpdate.newLatLngZoom(LatLng(_driverLat!, _driverLng!), 16.0),
     );
+  }
+
+  Set<Marker> _buildMapMarkers() {
+    final markers = <Marker>{};
+    if (_driverLat != null && _driverLng != null) {
+      markers.add(
+        Marker(
+          markerId: const MarkerId('courier_partner'),
+          position: LatLng(_driverLat!, _driverLng!),
+          rotation: _heading ?? 0.0,
+          flat: true,
+          anchor: const Offset(0.5, 0.5),
+          infoWindow: InfoWindow(
+            title: _job?.assignedPartner?.user.fullName ?? 'Delivery Partner',
+            snippet: _speedMps != null ? 'Speed: ${(_speedMps! * 3.6).toStringAsFixed(1)} km/h' : 'En route',
+          ),
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
+        ),
+      );
+    }
+    return markers;
   }
 
   @override
@@ -146,44 +166,49 @@ class _DeliveryTrackingScreenState
               ? const Center(child: Text('Delivery job details not found'))
               : Stack(
                   children: [
-                    // Live Map Viewport
+                    // Live Google Maps Viewport
                     Positioned.fill(
-                      child: Container(
-                        color: Colors.blue.shade50,
-                        child: Center(
-                          child: Column(
+                      child: GoogleMap(
+                        initialCameraPosition: CameraPosition(
+                          target: LatLng(_driverLat ?? 13.0827, _driverLng ?? 80.2707),
+                          zoom: 15.5,
+                        ),
+                        myLocationEnabled: true,
+                        myLocationButtonEnabled: false,
+                        zoomControlsEnabled: false,
+                        compassEnabled: true,
+                        markers: _buildMapMarkers(),
+                        onMapCreated: (ctrl) {
+                          _mapController = ctrl;
+                          _snapCameraToDriver();
+                        },
+                      ),
+                    ),
+
+                    // Reconnecting banner overlay
+                    if (_isReconnecting)
+                      Positioned(
+                        top: 12,
+                        left: 16,
+                        right: 16,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.orange.shade800,
+                            borderRadius: BorderRadius.circular(8),
+                            boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 4)],
+                          ),
+                          child: const Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Icon(Icons.map, size: 72, color: Colors.blue),
-                              const SizedBox(height: 12),
-                              Text(
-                                'Live Map Viewport & Route Polyline',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.blue.shade800,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                _driverLat != null
-                                    ? 'Live Courier Coordinates: ${_driverLat!.toStringAsFixed(4)}, ${_driverLng!.toStringAsFixed(4)}'
-                                    : 'Awaiting courier location ping...',
-                                style: TextStyle(fontSize: 12, color: Colors.blue.shade600),
-                              ),
-                              if (_isReconnecting)
-                                const Padding(
-                                  padding: EdgeInsets.only(top: 6),
-                                  child: Text(
-                                    'Reconnecting to live telemetry stream...',
-                                    style: TextStyle(fontSize: 11, color: Colors.orange, fontWeight: FontWeight.bold),
-                                  ),
-                                ),
+                              SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
+                              SizedBox(width: 8),
+                              Text('Reconnecting to live telemetry stream...', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
                             ],
                           ),
                         ),
                       ),
-                    ),
+
                     // Persistent Bottom Sheet
                     Align(
                       alignment: Alignment.bottomCenter,

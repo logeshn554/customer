@@ -10,7 +10,6 @@ class CustomerSupportScreen extends ConsumerStatefulWidget {
 }
 
 class _CustomerSupportScreenState extends ConsumerState<CustomerSupportScreen> {
-  final ApiClient _apiClient = ApiClient();
   bool _isLoading = true;
   List<dynamic> _tickets = [];
   Map<String, dynamic>? _activeTicket;
@@ -26,7 +25,8 @@ class _CustomerSupportScreenState extends ConsumerState<CustomerSupportScreen> {
   Future<void> _loadTickets() async {
     setState(() => _isLoading = true);
     try {
-      final data = await _apiClient.getUserSupportTickets(role: 'CUSTOMER');
+      final client = ref.read(apiClientProvider);
+      final data = await client.getUserSupportTickets(role: 'CUSTOMER');
       if (mounted) {
         setState(() {
           _tickets = data;
@@ -41,7 +41,8 @@ class _CustomerSupportScreenState extends ConsumerState<CustomerSupportScreen> {
   Future<void> _openTicketDetail(String ticketId) async {
     setState(() => _isLoading = true);
     try {
-      final res = await _apiClient.getSupportTicketDetails(ticketId);
+      final client = ref.read(apiClientProvider);
+      final res = await client.getSupportTicketDetails(ticketId);
       if (mounted) {
         setState(() {
           _activeTicket = res['ticket'] as Map<String, dynamic>?;
@@ -107,7 +108,8 @@ class _CustomerSupportScreenState extends ConsumerState<CustomerSupportScreen> {
 
     if (created == true && mounted) {
       try {
-        await _apiClient.createSupportTicket({
+        final client = ref.read(apiClientProvider);
+        await client.createSupportTicket({
           'category': category,
           'subject': subjectCtrl.text.trim(),
           'description': descCtrl.text.trim(),
@@ -126,7 +128,8 @@ class _CustomerSupportScreenState extends ConsumerState<CustomerSupportScreen> {
     if (text.isEmpty || _activeTicket == null) return;
 
     try {
-      await _apiClient.addSupportTicketMessage(_activeTicket!['id'].toString(), text);
+      final client = ref.read(apiClientProvider);
+      await client.addSupportTicketMessage(_activeTicket!['id'].toString(), text);
       _replyController.clear();
       _openTicketDetail(_activeTicket!['id'].toString());
     } catch (e) {
