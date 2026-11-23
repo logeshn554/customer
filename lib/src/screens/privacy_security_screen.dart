@@ -11,9 +11,26 @@ class PrivacySecurityScreen extends ConsumerStatefulWidget {
 }
 
 class _PrivacySecurityScreenState extends ConsumerState<PrivacySecurityScreen> {
-  bool _biometricEnabled = true;
+  final _biometricAuth = BiometricAuthService();
+  bool _biometricEnabled = false;
   bool _twoFactorEnabled = false;
   bool _personalizationEnabled = true;
+  List<Map<String, dynamic>> _deviceSessions = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSecurityPreferences();
+  }
+
+  Future<void> _loadSecurityPreferences() async {
+    final bio = await _biometricAuth.isBiometricEnabled();
+    if (mounted) setState(() => _biometricEnabled = bio);
+    try {
+      final sessions = await ref.read(apiClientProvider).listDeviceSessions();
+      if (mounted) setState(() => _deviceSessions = sessions);
+    } catch (_) {}
+  }
 
   Future<void> _handleDeleteAccount() async {
     final confirmed = await showDialog<bool>(
@@ -50,7 +67,10 @@ class _PrivacySecurityScreenState extends ConsumerState<PrivacySecurityScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           children: [
             _buildSectionHeader('Security Settings'),
-            _buildSwitchTile('Biometric Login', 'Unlock app with Fingerprint or Face ID', Icons.fingerprint, _biometricEnabled, (v) => setState(() => _biometricEnabled = v)),
+            _buildSwitchTile('Biometric Login', 'Unlock app with Fingerprint or Face ID', Icons.fingerprint, _biometricEnabled, (v) async {
+              setState(() => _biometricEnabled = v);
+              await _biometricAuth.setBiometricEnabled(v);
+            }),
             _buildSwitchTile('Two-Factor Authentication (2FA)', 'Require SMS OTP on new device sign-ins', Icons.security, _twoFactorEnabled, (v) => setState(() => _twoFactorEnabled = v)),
             const SizedBox(height: 20),
 
@@ -60,9 +80,25 @@ class _PrivacySecurityScreenState extends ConsumerState<PrivacySecurityScreen> {
               decoration: BoxDecoration(color: AllGoColors.surface, borderRadius: BorderRadius.circular(12), border: Border.all(color: AllGoColors.divider, width: 0.8)),
               child: Column(
                 children: [
-                  _buildSessionItem(device: 'Pixel 8 (This Device)', location: 'Chennai, India • Active Now', isCurrent: true),
-                  const Divider(height: 24),
-                  _buildSessionItem(device: 'Chrome on Windows', location: 'Chennai, India • 2 hours ago', isCurrent: false),
+                  _buildSessionItem(device: 'This Mobile Device', location: 'Active Now', isCurrent: true),
+                  if (_deviceSessions.isNotEmpty) ...[
+                    ..._deviceSessions.map((s) => Column(
+                      children: [
+                        const Divider(height: 24),
+                        _buildSessionItem(
+                          device: '${s['platform'] ?? 'Device'}: ${s['device_id'] ?? 'Mobile'}',
+                          location: 'Last active: ${s['last_active_at'] ?? 'Recently'}',
+                          isCurrent: false,
+                          onRevoke: () async {
+                            if (s['device_id'] != null) {
+                              await ref.read(apiClientProvider).revokeDeviceSession(s['device_id'].toString());
+                              _loadSecurityPreferences();
+                            }
+                          },
+                        ),
+                      ],
+                    )),
+                  ],
                 ],
               ),
             ),
@@ -173,7 +209,7 @@ class _PrivacySecurityScreenState extends ConsumerState<PrivacySecurityScreen> {
     );
   }
 
-  Widget _buildSessionItem({required String device, required String location, required bool isCurrent}) {
+  Widget _buildSessionItem({required String device, required String location, required bool isCurrent, VoidCallback? onRevoke}) {
     return Row(
       children: [
         Icon(isCurrent ? Icons.phone_android : Icons.laptop, color: isCurrent ? AllGoColors.primary : AllGoColors.textSecondary),
@@ -200,6 +236,11 @@ class _PrivacySecurityScreenState extends ConsumerState<PrivacySecurityScreen> {
             ],
           ),
         ),
+        if (!isCurrent && onRevoke != null)
+          TextButton(
+            onPressed: onRevoke,
+            child: const Text('Revoke', style: TextStyle(color: AllGoColors.error, fontSize: 12)),
+          ),
       ],
     );
   }
