@@ -37,6 +37,7 @@ class _ParcelSendScreenState extends ConsumerState<ParcelSendScreen> with Single
   String _selectedServiceCode = 'STANDARD';
   String _selectedCategory = 'DOCUMENTS';
   String _selectedVehicleType = 'TWO_WHEELER';
+  String _selectedPaymentMethod = 'WALLET';
   bool _isFragile = false;
   double _weightKg = 1.0;
 
@@ -149,11 +150,15 @@ class _ParcelSendScreenState extends ConsumerState<ParcelSendScreen> with Single
       final quote = await ref.read(apiClientProvider).quoteParcel({
         'serviceLevel': _selectedServiceCode,
         'packageCategory': _selectedCategory,
+        'vehicleType': _selectedVehicleType,
+        'isFragile': _isFragile,
         'weightKg': _weightKg,
         'pickupLatitude': _pickupLat,
         'pickupLongitude': _pickupLng,
         'dropoffLatitude': _dropoffLat,
         'dropoffLongitude': _dropoffLng,
+        'pickupLocation': {'latitude': _pickupLat, 'longitude': _pickupLng},
+        'dropoffLocation': {'latitude': _dropoffLat, 'longitude': _dropoffLng},
       });
       if (mounted) setState(() => _quote = quote);
     } catch (e) {
@@ -174,12 +179,23 @@ class _ParcelSendScreenState extends ConsumerState<ParcelSendScreen> with Single
         'pickupAddress': _pickupAddressCtrl.text,
         'pickupLatitude': _pickupLat,
         'pickupLongitude': _pickupLng,
+        'pickupLocation': {'latitude': _pickupLat, 'longitude': _pickupLng},
+        'pickupContactName': _senderNameCtrl.text,
+        'pickupContactPhone': _senderPhoneCtrl.text,
         'recipientName': _recipientNameCtrl.text,
         'recipientPhone': _recipientPhoneCtrl.text,
         'dropoffAddress': _dropoffAddressCtrl.text,
         'dropoffLatitude': _dropoffLat,
         'dropoffLongitude': _dropoffLng,
+        'dropoffLocation': {'latitude': _dropoffLat, 'longitude': _dropoffLng},
+        'dropoffContactName': _recipientNameCtrl.text,
+        'dropoffContactPhone': _recipientPhoneCtrl.text,
+        'packageCategory': _selectedCategory,
+        'vehicleType': _selectedVehicleType,
+        'isFragile': _isFragile,
+        'weightKg': _weightKg,
         'packageDescription': _descriptionCtrl.text,
+        'paymentMethod': _selectedPaymentMethod,
       });
       if (mounted) {
         setState(() {
@@ -266,6 +282,29 @@ class _ParcelSendScreenState extends ConsumerState<ParcelSendScreen> with Single
                         ),
                         const SizedBox(height: 4),
                         Text('Distance: ${_quote!.distanceKm} km | Est. Delivery: ${_quote!.estimatedDurationMinutes} mins', style: const TextStyle(fontSize: 12)),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            const Text('Payment: ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                            ChoiceChip(
+                              label: const Text('Wallet'),
+                              selected: _selectedPaymentMethod == 'WALLET',
+                              onSelected: (_) => setState(() => _selectedPaymentMethod = 'WALLET'),
+                            ),
+                            const SizedBox(width: 6),
+                            ChoiceChip(
+                              label: const Text('UPI'),
+                              selected: _selectedPaymentMethod == 'UPI',
+                              onSelected: (_) => setState(() => _selectedPaymentMethod = 'UPI'),
+                            ),
+                            const SizedBox(width: 6),
+                            ChoiceChip(
+                              label: const Text('COD'),
+                              selected: _selectedPaymentMethod == 'COD',
+                              onSelected: (_) => setState(() => _selectedPaymentMethod = 'COD'),
+                            ),
+                          ],
+                        ),
                         const SizedBox(height: 16),
                         AllGoButton(
                           label: 'Confirm & Dispatch Porter',
