@@ -36,6 +36,8 @@ class _ParcelSendScreenState extends ConsumerState<ParcelSendScreen> with Single
 
   String _selectedServiceCode = 'STANDARD';
   String _selectedCategory = 'DOCUMENTS';
+  String _selectedVehicleType = 'TWO_WHEELER';
+  bool _isFragile = false;
   double _weightKg = 1.0;
 
   bool _isQuoting = false;
@@ -233,6 +235,10 @@ class _ParcelSendScreenState extends ConsumerState<ParcelSendScreen> with Single
                 recipientPhoneCtrl: _recipientPhoneCtrl,
                 dropoffAddressCtrl: _dropoffAddressCtrl,
                 descriptionCtrl: _descriptionCtrl,
+                selectedVehicleType: _selectedVehicleType,
+                onSelectVehicle: (v) => setState(() => _selectedVehicleType = v),
+                isFragile: _isFragile,
+                onFragileChanged: (f) => setState(() => _isFragile = f),
                 onSelectService: (s) => setState(() => _selectedServiceCode = s),
                 onSelectCategory: (c) => setState(() => _selectedCategory = c),
                 onWeightChanged: (w) => setState(() => _weightKg = w),
