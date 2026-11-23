@@ -1,0 +1,16 @@
+{
+  "@@locale": "en",
+  "appTitle": "AllGo Super App",
+  "loginTitle": "Sign In with Phone",
+  "enterOtp": "Enter OTP",
+  "verifyAndProceed": "Verify & Proceed",
+  "deliveriesOnly": "Deliveries Only",
+  "ridesOnly": "Rides Only",
+  "allJobs": "All Jobs (Max Earnings)",
+  "languagePicker": "Select Language",
+  "privacyPolicy": "Privacy Policy",
+  "termsConditions": "Terms & Conditions",
+  "locationPermissionRationale": "AllGo requires your location to deliver orders and offer rides accurately.",
+  "deliverTogether": "Deliver Together",
+  "fastestDelivery": "Fastest Delivery"
+}

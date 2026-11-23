@@ -1,0 +1,16 @@
+{
+  "@@locale": "hi",
+  "appTitle": "ऑलगो सुपर ऐप",
+  "loginTitle": "फ़ोन नंबर से साइन इन करें",
+  "enterOtp": "ओटीपी दर्ज करें",
+  "verifyAndProceed": "सत्यापित करें और आगे बढ़ें",
+  "deliveriesOnly": "केवल डिलीवरी",
+  "ridesOnly": "केवल राइड्स",
+  "allJobs": "सभी कार्य (अधिकतम कमाई)",
+  "languagePicker": "भाषा चुनें",
+  "privacyPolicy": "गोपनीयता नीति",
+  "termsConditions": "नियम एवं शर्तें",
+  "locationPermissionRationale": "ऑर्डर डिलीवर करने और राइड की सही जानकारी के लिए ऑलगो को आपके लोकेशन की अनुमति चाहिए।",
+  "deliverTogether": "एक साथ डिलीवर करें",
+  "fastestDelivery": "सबसे तेज़ डिलीवरी"
+}
