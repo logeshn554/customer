@@ -27,6 +27,7 @@ dependencies:
   firebase_performance: ^0.10.0
   google_maps_flutter: ^2.6.0
   geolocator: ^11.0.0
+  flutter_secure_storage: ^9.0.0
   allgo_mobile_shared:
     path: ../../packages/mobile_shared
 
@@ -37,3 +38,4 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  generate: true

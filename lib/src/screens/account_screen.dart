@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:allgo_mobile_shared/allgo_mobile_shared.dart';
+import '../components/theme_selection_sheet.dart';
+import '../providers/app_settings_provider.dart';
 import 'welcome_screen.dart';
 import 'wallet_screen.dart';
 import 'payments_and_refunds_screen.dart';
@@ -47,6 +49,14 @@ class AccountScreen extends ConsumerWidget {
       case 'ta': return 'தமிழ் (Tamil)';
       case 'hi': return 'हिन्दी (Hindi)';
       default: return 'English';
+    }
+  }
+
+  String _getThemeSubtitle(ThemeMode mode) {
+    switch (mode) {
+      case ThemeMode.light: return 'Light Mode';
+      case ThemeMode.dark: return 'Dark Mode';
+      case ThemeMode.system: return 'System Default';
     }
   }
 
@@ -159,6 +169,12 @@ class AccountScreen extends ConsumerWidget {
               title: 'App Language',
               subtitle: _getLanguageSubtitle(user?.defaultLanguage),
               onTap: () => LanguageSelectionSheet.show(context),
+            ),
+            _buildOptionTile(
+              icon: Icons.brightness_6_outlined,
+              title: 'App Theme',
+              subtitle: _getThemeSubtitle(ref.watch(themeModeProvider)),
+              onTap: () => ThemeSelectionSheet.show(context),
             ),
             _buildOptionTile(
               icon: Icons.notifications_none,
