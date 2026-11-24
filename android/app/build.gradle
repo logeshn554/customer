@@ -35,6 +35,7 @@ android {
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         manifestPlaceholders = [
+            applicationName: 'io.flutter.app.FlutterApplication',
             GOOGLE_MAPS_CLIENT_ANDROID_KEY: project.findProperty('GOOGLE_MAPS_CLIENT_ANDROID_KEY') ?: System.getenv('GOOGLE_MAPS_CLIENT_ANDROID_KEY') ?: ""
         ]
     }
