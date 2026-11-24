@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:allgo_mobile_shared/allgo_mobile_shared.dart';
+import 'home_banner_carousel.dart';
+import 'home_category_chips.dart';
+import 'home_horizontal_store_row.dart';
+import 'home_offers_strip.dart';
 import 'unified_active_bookings_tray.dart';
+import '../screens/cart_screen.dart';
+import '../screens/hire_driver_screen.dart';
+import '../screens/outlet_catalog_screen.dart';
 import '../screens/parcel_send_screen.dart';
 import '../screens/ride_booking_screen.dart';
-import '../screens/hire_driver_screen.dart';
-import '../screens/cart_screen.dart';
 
-class CustomerHomeTab extends StatelessWidget {
+class CustomerHomeTab extends StatefulWidget {
   final User? user;
   final List<DeliveryJobModel> activeDeliveries;
   final List<UnifiedActiveBookingItem> unifiedBookings;
@@ -32,6 +37,13 @@ class CustomerHomeTab extends StatelessWidget {
     required this.onNavigateTab,
   });
 
+  @override
+  State<CustomerHomeTab> createState() => _CustomerHomeTabState();
+}
+
+class _CustomerHomeTabState extends State<CustomerHomeTab> {
+  String _selectedCategory = 'ALL';
+
   Widget _buildServiceCard(
     BuildContext context,
     String title,
@@ -42,16 +54,9 @@ class CustomerHomeTab extends StatelessWidget {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: AllGoColors.surface,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AllGoColors.divider),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        border: Border.all(color: Theme.of(context).dividerColor.withValues(alpha: 0.6)),
       ),
       child: Material(
         color: Colors.transparent,
@@ -59,28 +64,25 @@ class CustomerHomeTab extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           onTap: onTap,
           child: Padding(
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.all(12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(9),
+                  padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     color: color.withValues(alpha: 0.12),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(icon, color: color, size: 22),
+                  child: Icon(icon, color: color, size: 20),
                 ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       title,
-                      style: AllGoTypography.bodyMedium.copyWith(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13,
-                      ),
+                      style: AllGoTypography.bodyMedium.copyWith(fontWeight: FontWeight.bold, fontSize: 13),
                     ),
                     const SizedBox(height: 2),
                     Text(
@@ -101,12 +103,46 @@ class CustomerHomeTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Generate dummy recommended outlets for visual discovery if empty
+    final mockOutlets = [
+      DiscoveryOutlet(
+        id: 'out-1',
+        merchantId: 'm-1',
+        outletName: 'A2B - Adyar Ananda Bhavan',
+        businessName: 'A2B Veg',
+        outletStatus: 'ACTIVE',
+        isOpen: true,
+        merchantType: 'FOOD',
+        distanceKm: 1.8,
+      ),
+      DiscoveryOutlet(
+        id: 'out-2',
+        merchantId: 'm-2',
+        outletName: 'BlinkGrocery Super Mart',
+        businessName: 'BlinkGrocery',
+        outletStatus: 'ACTIVE',
+        isOpen: true,
+        merchantType: 'GROCERY',
+        distanceKm: 1.2,
+      ),
+      DiscoveryOutlet(
+        id: 'out-3',
+        merchantId: 'm-3',
+        outletName: 'Dindigul Thalappakatti',
+        businessName: 'Thalappakatti Biryani',
+        outletStatus: 'ACTIVE',
+        isOpen: true,
+        merchantType: 'FOOD',
+        distanceKm: 2.5,
+      ),
+    ];
+
     return RefreshIndicator(
-      onRefresh: () async => onRefresh(),
+      onRefresh: () async => widget.onRefresh(),
       child: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         children: [
-          // Greeting & Interactive Location bar
+          // Header: Location & Cart
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -115,7 +151,7 @@ class CustomerHomeTab extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     InkWell(
-                      onTap: onSelectAddress,
+                      onTap: widget.onSelectAddress,
                       borderRadius: BorderRadius.circular(8),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 2.0),
@@ -126,24 +162,20 @@ class CustomerHomeTab extends StatelessWidget {
                             const SizedBox(width: 4),
                             Flexible(
                               child: Text(
-                                currentAddressLabel,
-                                style: AllGoTypography.caption.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: AllGoColors.textPrimary,
-                                ),
+                                widget.currentAddressLabel,
+                                style: AllGoTypography.caption.copyWith(fontWeight: FontWeight.bold),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            const SizedBox(width: 2),
                             const Icon(Icons.keyboard_arrow_down, size: 16, color: AllGoColors.textTertiary),
                           ],
                         ),
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 2),
                     Text(
-                      user != null ? 'Hello, ${user?.fullName ?? user?.phoneNumber ?? "Partner"}' : 'Welcome to AllGo',
+                      widget.user != null ? 'Hello, ${widget.user?.fullName ?? "Partner"}' : 'Welcome to AllGo',
                       style: AllGoTypography.heading2.copyWith(fontSize: 18),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -151,93 +183,64 @@ class CustomerHomeTab extends StatelessWidget {
                   ],
                 ),
               ),
-              Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.shopping_bag_outlined, color: AllGoColors.textPrimary),
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const CartScreen()),
-                      );
-                    },
-                  ),
-                  CircleAvatar(
-                    backgroundColor: AllGoColors.primary.withValues(alpha: 0.1),
-                    child: const Icon(Icons.person, color: AllGoColors.primary),
-                  ),
-                ],
+              IconButton(
+                icon: const Icon(Icons.shopping_bag_outlined),
+                tooltip: 'Open cart',
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const CartScreen()),
+                  );
+                },
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
 
-          // Unified Active Bookings Tray
-          if (unifiedBookings.isNotEmpty)
+          // Active Bookings Tray
+          if (widget.unifiedBookings.isNotEmpty) ...[
             UnifiedActiveBookingsTray(
-              bookings: unifiedBookings,
-              onRefresh: onRefresh,
+              bookings: widget.unifiedBookings,
+              onRefresh: widget.onRefresh,
             ),
+            const SizedBox(height: 12),
+          ],
 
-          // Promotional Super Banner
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [AllGoColors.primary, AllGoColors.primary.withValues(alpha: 0.8)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          'ALLGO SUPERPASS',
-                          style: AllGoTypography.caption.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Zero Delivery Fee On Food & Rides',
-                        style: AllGoTypography.heading3.copyWith(color: Colors.white),
-                      ),
-                    ],
-                  ),
-                ),
-                const Icon(Icons.stars, color: Colors.amber, size: 48),
-              ],
-            ),
+          // Category Filter Chips
+          HomeCategoryChips(
+            selectedCategory: _selectedCategory,
+            onSelectCategory: (cat) {
+              setState(() => _selectedCategory = cat);
+              widget.onNavigateTab(1);
+            },
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 14),
+
+          // Promotional Banner Carousel
+          HomeBannerCarousel(onBannerTap: (_) => widget.onNavigateTab(1)),
+          const SizedBox(height: 14),
+
+          // Offers Strip
+          HomeOffersStrip(onTap: () => widget.onNavigateTab(1)),
+          const SizedBox(height: 18),
 
           // All Super-App Services Grid
           Text('All Services', style: AllGoTypography.heading3),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           GridView.count(
             crossAxisCount: 2,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            childAspectRatio: 1.25,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+            childAspectRatio: 1.35,
             children: [
               _buildServiceCard(
                 context,
                 'Food Delivery',
-                'Restaurants & Cloud Kitchens',
+                'Restaurants & Kitchens',
                 Icons.restaurant,
                 Colors.orange,
-                onTap: () => onNavigateTab(1),
+                onTap: () => widget.onNavigateTab(1),
               ),
               _buildServiceCard(
                 context,
@@ -245,31 +248,27 @@ class CustomerHomeTab extends StatelessWidget {
                 'Delivered in 15 mins',
                 Icons.shopping_basket,
                 Colors.green,
-                onTap: () => onNavigateTab(1),
+                onTap: () => widget.onNavigateTab(1),
               ),
               _buildServiceCard(
                 context,
                 'City Parcel',
-                'Porter-style cargo & couriers',
+                'Porter-style cargo',
                 Icons.local_shipping,
                 Colors.deepPurple,
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const ParcelSendScreen()),
-                  );
-                },
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const ParcelSendScreen()),
+                ),
               ),
               _buildServiceCard(
                 context,
                 'Mobility Rides',
-                'Bike Taxi, Auto & Cabs',
+                'Bike, Auto & Cabs',
                 Icons.directions_car,
                 Colors.teal,
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const RideBookingScreen()),
-                  );
-                },
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const RideBookingScreen()),
+                ),
               ),
               _buildServiceCard(
                 context,
@@ -277,23 +276,41 @@ class CustomerHomeTab extends StatelessWidget {
                 'Chauffeur for your car',
                 Icons.airline_seat_recline_normal,
                 Colors.indigo,
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const HireDriverScreen()),
-                  );
-                },
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const HireDriverScreen()),
+                ),
               ),
               _buildServiceCard(
                 context,
-                'Home Sellers',
-                'Homemade foods & snacks',
-                Icons.cookie,
+                'Order Again',
+                'Past favorites & reorder',
+                Icons.replay,
                 Colors.pink,
-                onTap: () => onNavigateTab(1),
+                onTap: () => widget.onNavigateTab(2),
               ),
             ],
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 18),
+
+          // Recommended For You Horizontal Row
+          HomeHorizontalStoreRow(
+            title: 'Recommended For You',
+            subtitle: 'Curated outlets delivering in your area',
+            outlets: mockOutlets,
+            onOutletTap: (out) {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => OutletCatalogScreen(
+                    outletId: out.outletId,
+                    outletName: out.outletName,
+                    categoryName: out.verticalType,
+                  ),
+                ),
+              );
+            },
+            onViewAll: () => widget.onNavigateTab(1),
+          ),
+          const SizedBox(height: 16),
         ],
       ),
     );
