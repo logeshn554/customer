@@ -12,6 +12,10 @@ import 'edit_profile_screen.dart';
 import 'privacy_security_screen.dart';
 import 'saved_addresses_screen.dart';
 import 'favorite_and_recent_stores_screen.dart';
+import 'offers_coupons_screen.dart';
+import 'refer_earn_screen.dart';
+import 'help_faq_screen.dart';
+import 'app_settings_screen.dart';
 import 'legal/terms_screen.dart';
 import 'legal/privacy_policy_screen.dart';
 import 'legal/about_screen.dart';
@@ -163,10 +167,34 @@ class AccountScreen extends ConsumerWidget {
                 MaterialPageRoute(builder: (_) => const PaymentsAndRefundsScreen()),
               ),
             ),
+            _buildOptionTile(
+              icon: Icons.local_offer_outlined,
+              title: 'Offers & Coupons',
+              subtitle: 'Exclusive discounts on food, groceries, and rides',
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const OffersCouponsScreen()),
+              ),
+            ),
+            _buildOptionTile(
+              icon: Icons.card_giftcard_outlined,
+              title: 'Refer & Earn',
+              subtitle: 'Earn ₹100 wallet credit for every friend invited',
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const ReferEarnScreen()),
+              ),
+            ),
             const SizedBox(height: 16),
 
             // Settings Options
             _buildSectionHeader('Preferences'),
+            _buildOptionTile(
+              icon: Icons.settings_outlined,
+              title: 'App Settings',
+              subtitle: 'Notification toggles and storage cache cleanup',
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const AppSettingsScreen()),
+              ),
+            ),
             _buildOptionTile(
               icon: Icons.language,
               title: 'App Language',
@@ -190,6 +218,14 @@ class AccountScreen extends ConsumerWidget {
             const SizedBox(height: 16),
 
             _buildSectionHeader('Account & Security'),
+            _buildOptionTile(
+              icon: Icons.quiz_outlined,
+              title: 'Help Centre & FAQ',
+              subtitle: 'Common questions, payment guides, and cancellations',
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const HelpFaqScreen()),
+              ),
+            ),
             _buildOptionTile(
               icon: Icons.shield_outlined,
               title: 'Privacy & Security',
