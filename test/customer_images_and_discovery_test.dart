@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:allgo_mobile_shared/allgo_mobile_shared.dart';
 import 'package:allgo_customer_mobile/src/widgets/veg_badge.dart';
 import 'package:allgo_customer_mobile/src/components/customer_product_card.dart';
-import 'package:allgo_customer_mobile/src/components/home_banner_carousel.dart';
 import 'package:allgo_customer_mobile/src/components/home_category_chips.dart';
 import 'package:allgo_customer_mobile/src/components/search_filter_bottom_sheet.dart';
 

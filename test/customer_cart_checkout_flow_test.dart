@@ -54,8 +54,8 @@ void main() {
         ),
       );
 
-      expect(find.text('Select Payment Method'), findsOneWidget);
-      expect(find.text('UPI Instant (GPay / PhonePe / Paytm)'), findsOneWidget);
+      expect(find.text('Payment Options'), findsOneWidget);
+      expect(find.text('UPI Instant'), findsOneWidget);
       expect(find.text('Credit / Debit Card'), findsOneWidget);
       expect(find.text('Cash on Delivery (COD)'), findsOneWidget);
 
