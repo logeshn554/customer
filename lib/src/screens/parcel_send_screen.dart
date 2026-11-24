@@ -7,7 +7,7 @@ import 'package:allgo_mobile_shared/allgo_mobile_shared.dart';
 import '../components/parcel_spec_and_address_cards.dart';
 import '../components/parcel_active_tracking_card.dart';
 import '../components/parcel_history_view.dart';
-import 'map_coordinate_picker_modal.dart';
+import '../common/friendly_error.dart';
 
 class ParcelSendScreen extends ConsumerStatefulWidget {
   final String? activeParcelId;
@@ -78,7 +78,9 @@ class _ParcelSendScreenState extends ConsumerState<ParcelSendScreen> with Single
         _pickupLng = def.longitude;
         return;
       }
-    } catch (_) {}
+    } catch (e, st) {
+      FriendlyError.from(e, st);
+    }
 
     try {
       LocationPermission perm = await Geolocator.checkPermission();
@@ -93,12 +95,15 @@ class _ParcelSendScreenState extends ConsumerState<ParcelSendScreen> with Single
           try {
             final rev = await ref.read(apiClientProvider).reverseGeocode(pos.latitude, pos.longitude);
             _pickupAddressCtrl.text = rev.formattedAddress;
-          } catch (_) {
+          } catch (e, st) {
+            FriendlyError.from(e, st);
             _pickupAddressCtrl.text = 'Current GPS Location';
           }
         }
       }
-    } catch (_) {}
+    } catch (e, st) {
+      FriendlyError.from(e, st);
+    }
   }
 
   @override
@@ -127,7 +132,9 @@ class _ParcelSendScreenState extends ConsumerState<ParcelSendScreen> with Single
     try {
       final p = await ref.read(apiClientProvider).getParcelDetails(parcelId);
       if (mounted) setState(() => _activeParcel = p);
-    } catch (_) {}
+    } catch (e, st) {
+      FriendlyError.from(e, st);
+    }
   }
 
   Future<void> _loadHistory() async {
@@ -135,7 +142,9 @@ class _ParcelSendScreenState extends ConsumerState<ParcelSendScreen> with Single
     try {
       final res = await ref.read(apiClientProvider).listCustomerParcels();
       if (mounted) setState(() => _history = res);
-    } catch (_) {} finally {
+    } catch (e, st) {
+      FriendlyError.from(e, st);
+    } finally {
       if (mounted) setState(() => _isLoadingHistory = false);
     }
   }

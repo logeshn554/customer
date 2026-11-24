@@ -35,14 +35,14 @@ void main() {
         ),
       );
 
-      expect(find.text('Enter Mobile Number'), findsOneWidget);
-      expect(find.text('Get Verification Code'), findsOneWidget);
+      expect(find.text('Enter Phone Number'), findsOneWidget);
+      expect(find.text('Send Verification Code'), findsOneWidget);
 
       // Attempt to submit empty phone number
-      await tester.tap(find.text('Get Verification Code'));
+      await tester.tap(find.text('Send Verification Code'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Please enter a 10-digit mobile number'), findsOneWidget);
+      expect(find.text('Please enter your mobile number'), findsOneWidget);
 
       // Enter valid 10 digits
       await tester.enterText(find.byType(TextFormField), '9876543210');

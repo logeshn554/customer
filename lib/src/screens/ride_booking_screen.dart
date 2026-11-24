@@ -7,6 +7,7 @@ import 'package:allgo_mobile_shared/allgo_mobile_shared.dart';
 import '../components/ride_booking_form.dart';
 import '../components/active_ride_tracking_view.dart';
 import 'map_coordinate_picker_modal.dart';
+import '../common/friendly_error.dart';
 
 class RideBookingScreen extends ConsumerStatefulWidget {
   final String? activeRideId;
@@ -56,7 +57,9 @@ class _RideBookingScreenState extends ConsumerState<RideBookingScreen> {
         _pickupLng = def.longitude;
         return;
       }
-    } catch (_) {}
+    } catch (e, st) {
+      FriendlyError.from(e, st);
+    }
 
     try {
       LocationPermission perm = await Geolocator.checkPermission();
@@ -74,12 +77,15 @@ class _RideBookingScreenState extends ConsumerState<RideBookingScreen> {
           try {
             final rev = await ref.read(apiClientProvider).reverseGeocode(pos.latitude, pos.longitude);
             _pickupCtrl.text = rev.formattedAddress;
-          } catch (_) {
+          } catch (e, st) {
+            FriendlyError.from(e, st);
             _pickupCtrl.text = 'Current GPS Location';
           }
         }
       }
-    } catch (_) {}
+    } catch (e, st) {
+      FriendlyError.from(e, st);
+    }
   }
 
   @override
@@ -102,7 +108,9 @@ class _RideBookingScreenState extends ConsumerState<RideBookingScreen> {
     try {
       final ride = await ref.read(apiClientProvider).getRide(rideId);
       if (mounted) setState(() => _activeRide = ride);
-    } catch (_) {}
+    } catch (e, st) {
+      FriendlyError.from(e, st);
+    }
   }
 
   Future<void> _pickPickupOnMap() async {

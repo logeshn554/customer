@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:allgo_mobile_shared/allgo_mobile_shared.dart';
 import 'unified_active_bookings_tray.dart';
-import '../screens/outlet_catalog_screen.dart';
 import '../screens/parcel_send_screen.dart';
 import '../screens/ride_booking_screen.dart';
 import '../screens/hire_driver_screen.dart';
@@ -48,7 +47,7 @@ class CustomerHomeTab extends StatelessWidget {
         border: Border.all(color: AllGoColors.divider),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -68,7 +67,7 @@ class CustomerHomeTab extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(9),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.12),
+                    color: color.withValues(alpha: 0.12),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(icon, color: color, size: 22),
@@ -163,7 +162,7 @@ class CustomerHomeTab extends StatelessWidget {
                     },
                   ),
                   CircleAvatar(
-                    backgroundColor: AllGoColors.primary.withOpacity(0.1),
+                    backgroundColor: AllGoColors.primary.withValues(alpha: 0.1),
                     child: const Icon(Icons.person, color: AllGoColors.primary),
                   ),
                 ],
@@ -184,7 +183,7 @@ class CustomerHomeTab extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [AllGoColors.primary, AllGoColors.primary.withOpacity(0.8)],
+                colors: [AllGoColors.primary, AllGoColors.primary.withValues(alpha: 0.8)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -199,7 +198,7 @@ class CustomerHomeTab extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
+                          color: Colors.white.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(

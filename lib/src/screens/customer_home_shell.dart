@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../pages/customer_home_page.dart';
+import 'customer_home_screen.dart';
 
-export '../pages/customer_home_page.dart';
+export 'customer_home_screen.dart';
 
 /// Customer Home Shell screen facade.
 /// Supported core super-app service verticals:

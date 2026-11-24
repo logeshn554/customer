@@ -19,7 +19,7 @@ class CheckoutPaymentSelector extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: isSelected ? AllGoColors.primary.withOpacity(0.05) : Colors.white,
+          color: isSelected ? AllGoColors.primary.withValues(alpha: 0.05) : Colors.white,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: isSelected ? AllGoColors.primary : AllGoColors.divider),
         ),

@@ -60,7 +60,7 @@ class HireDriverBookingForm extends StatelessWidget {
                       child: OutlinedButton(
                         onPressed: () => onTransmissionChanged('MANUAL'),
                         style: OutlinedButton.styleFrom(
-                          backgroundColor: transmission == 'MANUAL' ? Colors.indigo.withOpacity(0.1) : null,
+                          backgroundColor: transmission == 'MANUAL' ? Colors.indigo.withValues(alpha: 0.1) : null,
                           side: BorderSide(color: transmission == 'MANUAL' ? Colors.indigo : Colors.grey),
                         ),
                         child: const Text('Manual'),
@@ -71,7 +71,7 @@ class HireDriverBookingForm extends StatelessWidget {
                       child: OutlinedButton(
                         onPressed: () => onTransmissionChanged('AUTOMATIC'),
                         style: OutlinedButton.styleFrom(
-                          backgroundColor: transmission == 'AUTOMATIC' ? Colors.indigo.withOpacity(0.1) : null,
+                          backgroundColor: transmission == 'AUTOMATIC' ? Colors.indigo.withValues(alpha: 0.1) : null,
                           side: BorderSide(color: transmission == 'AUTOMATIC' ? Colors.indigo : Colors.grey),
                         ),
                         child: const Text('Automatic'),

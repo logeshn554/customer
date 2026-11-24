@@ -16,7 +16,7 @@ void main() {
         ),
       );
 
-      expect(find.text('Live Tracking'), findsOneWidget);
+      expect(find.text('Live Delivery Tracking'), findsOneWidget);
     });
 
     testWidgets('LiveTripTrackingBottomSheet displays OTP and tracking details correctly', (tester) async {

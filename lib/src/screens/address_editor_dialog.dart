@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:allgo_mobile_shared/allgo_mobile_shared.dart';
+import '../common/friendly_error.dart';
 import '../components/address_form_fields.dart';
 import 'map_coordinate_picker_modal.dart';
 
@@ -69,7 +70,9 @@ class _AddressEditorDialogState extends ConsumerState<AddressEditorDialog> {
           _reverseGeocode(pos.latitude, pos.longitude);
         }
       }
-    } catch (_) {}
+    } catch (e, st) {
+      FriendlyError.from(e, st);
+    }
   }
 
   Future<void> _reverseGeocode(double lat, double lng) async {
@@ -83,7 +86,9 @@ class _AddressEditorDialogState extends ConsumerState<AddressEditorDialog> {
           }
         });
       }
-    } catch (_) {}
+    } catch (e, st) {
+      FriendlyError.from(e, st);
+    }
   }
 
   @override
@@ -213,9 +218,9 @@ class _AddressEditorDialogState extends ConsumerState<AddressEditorDialog> {
                       child: Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: AllGoColors.primary.withOpacity(0.06),
+                          color: AllGoColors.primary.withValues(alpha: 0.06),
                           borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: AllGoColors.primary.withOpacity(0.3)),
+                          border: Border.all(color: AllGoColors.primary.withValues(alpha: 0.3)),
                         ),
                         child: Row(
                           children: [

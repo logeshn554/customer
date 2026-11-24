@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:allgo_mobile_shared/allgo_mobile_shared.dart';
 import 'welcome_screen.dart';
+import '../common/friendly_error.dart';
 
 class PrivacySecurityScreen extends ConsumerStatefulWidget {
   const PrivacySecurityScreen({super.key});
@@ -29,7 +30,9 @@ class _PrivacySecurityScreenState extends ConsumerState<PrivacySecurityScreen> {
     try {
       final sessions = await ref.read(apiClientProvider).listDeviceSessions();
       if (mounted) setState(() => _deviceSessions = sessions);
-    } catch (_) {}
+    } catch (e, st) {
+      FriendlyError.from(e, st);
+    }
   }
 
   Future<void> _handleDeleteAccount() async {
@@ -150,7 +153,7 @@ class _PrivacySecurityScreenState extends ConsumerState<PrivacySecurityScreen> {
 
             _buildSectionHeader('Danger Zone'),
             Container(
-              decoration: BoxDecoration(color: AllGoColors.error.withOpacity(0.06), borderRadius: BorderRadius.circular(12), border: Border.all(color: AllGoColors.error.withOpacity(0.3))),
+              decoration: BoxDecoration(color: AllGoColors.error.withValues(alpha: 0.06), borderRadius: BorderRadius.circular(12), border: Border.all(color: AllGoColors.error.withValues(alpha: 0.3))),
               child: Material(
                 color: Colors.transparent,
                 child: ListTile(
@@ -225,7 +228,7 @@ class _PrivacySecurityScreenState extends ConsumerState<PrivacySecurityScreen> {
                     const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(color: AllGoColors.success.withOpacity(0.15), borderRadius: BorderRadius.circular(4)),
+                      decoration: BoxDecoration(color: AllGoColors.success.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(4)),
                       child: const Text('Active', style: TextStyle(color: AllGoColors.success, fontSize: 10, fontWeight: FontWeight.bold)),
                     ),
                   ],

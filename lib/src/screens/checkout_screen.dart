@@ -7,7 +7,7 @@ import '../components/checkout_payment_selector.dart';
 import '../components/checkout_bill_summary.dart';
 import 'order_detail_screen.dart';
 import 'address_editor_dialog.dart';
-import 'saved_addresses_screen.dart';
+import '../common/friendly_error.dart';
 
 class CheckoutScreen extends ConsumerStatefulWidget {
   const CheckoutScreen({super.key});
@@ -50,7 +50,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           _isLoading = false;
         });
       }
-    } catch (_) {
+    } catch (e, st) {
+      FriendlyError.from(e, st);
       if (mounted) setState(() => _isLoading = false);
     }
   }
@@ -60,7 +61,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     try {
       final updatedPricing = await ref.read(apiClientProvider).getCheckoutEstimate(paymentMethod: method);
       if (mounted) setState(() => _pricing = updatedPricing);
-    } catch (_) {}
+    } catch (e, st) {
+      FriendlyError.from(e, st);
+    }
   }
 
   Future<void> _showAddAddressDialog() async {
@@ -94,50 +97,88 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           MaterialPageRoute(builder: (_) => OrderDetailScreen(subOrderId: subOrderId)),
         );
       }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Order failed: $e')));
+    } catch (e, st) {
+      final err = FriendlyError.from(e, st);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(err.message),
+          action: SnackBarAction(label: 'Retry', onPressed: _handlePlaceOrder),
+        ),
+      );
     } finally {
       if (mounted) setState(() => _isPlacingOrder = false);
     }
   }
 
+  Future<bool> _showDiscardCheckoutDialog() async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Discard Checkout?'),
+        content: const Text('Your selected items will remain saved in your cart.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Stay'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AllGoColors.error),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Discard', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+    return result ?? false;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AllGoColors.background,
-      appBar: AppBar(title: const Text('Checkout & Payment')),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                CheckoutAddressSelector(
-                  addresses: _addresses,
-                  selectedAddress: _selectedAddress,
-                  isLoading: _isLoadingAddresses,
-                  onSelect: (addr) => setState(() => _selectedAddress = addr),
-                  onAddNew: _showAddAddressDialog,
-                ),
-                const SizedBox(height: 16),
-                CheckoutPaymentSelector(
-                  selectedMethod: _selectedPaymentMethod,
-                  onSelectMethod: _handlePaymentMethodChanged,
-                ),
-                const SizedBox(height: 16),
-                if (_pricing != null) ...[
-                  CheckoutBillSummary(
-                    pricing: _pricing!,
-                    storeCount: _cart?.outlets.length ?? 1,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (bool didPop, dynamic result) async {
+        if (didPop) return;
+        final shouldLeave = await _showDiscardCheckoutDialog();
+        if (shouldLeave && context.mounted) {
+          Navigator.of(context).pop();
+        }
+      },
+      child: Scaffold(
+        backgroundColor: AllGoColors.background,
+        appBar: AppBar(title: const Text('Checkout & Payment')),
+        body: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  CheckoutAddressSelector(
+                    addresses: _addresses,
+                    selectedAddress: _selectedAddress,
+                    isLoading: _isLoadingAddresses,
+                    onSelect: (addr) => setState(() => _selectedAddress = addr),
+                    onAddNew: _showAddAddressDialog,
                   ),
-                  const SizedBox(height: 24),
-                  AllGoButton(
-                    label: 'Pay ₹${_pricing!.finalTotalInr.toStringAsFixed(0)} & Place Order',
-                    isLoading: _isPlacingOrder,
-                    onPressed: _handlePlaceOrder,
+                  const SizedBox(height: 16),
+                  CheckoutPaymentSelector(
+                    selectedMethod: _selectedPaymentMethod,
+                    onSelectMethod: _handlePaymentMethodChanged,
                   ),
+                  const SizedBox(height: 16),
+                  if (_pricing != null) ...[
+                    CheckoutBillSummary(
+                      pricing: _pricing!,
+                      storeCount: _cart?.outlets.length ?? 1,
+                    ),
+                    const SizedBox(height: 24),
+                    AllGoButton(
+                      label: 'Pay ₹${_pricing!.finalTotalInr.toStringAsFixed(0)} & Place Order',
+                      isLoading: _isPlacingOrder,
+                      onPressed: _handlePlaceOrder,
+                    ),
+                  ],
                 ],
-              ],
-            ),
+              ),
+      ),
     );
   }
 }

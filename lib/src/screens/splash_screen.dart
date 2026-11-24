@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:allgo_mobile_shared/allgo_mobile_shared.dart';
-import 'welcome_screen.dart';
-import 'customer_home_shell.dart';
+import 'package:go_router/go_router.dart';
+import '../router/app_router.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -19,9 +19,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   }
 
   Future<void> _checkInitialAuth() async {
-    await Future.delayed(const Duration(milliseconds: 800));
-    if (!mounted) return;
-
     final authNotifier = ref.read(authNotifierProvider.notifier);
     await authNotifier.checkSession();
 
@@ -29,13 +26,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     final authState = ref.read(authNotifierProvider);
 
     if (authState.isAuthenticated) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const CustomerHomeShell()),
-      );
+      context.go(AppRoutes.home);
     } else {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const WelcomeScreen()),
-      );
+      context.go(AppRoutes.welcome);
     }
   }
 
@@ -55,7 +48,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: AllGoColors.primary.withOpacity(0.3),
+                    color: AllGoColors.primary.withValues(alpha: 0.3),
                     blurRadius: 20,
                     offset: const Offset(0, 8),
                   ),

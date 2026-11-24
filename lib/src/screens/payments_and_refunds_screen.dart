@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:allgo_mobile_shared/allgo_mobile_shared.dart';
+import '../widgets/error_retry_view.dart';
+import '../common/friendly_error.dart';
 
 class PaymentsAndRefundsScreen extends ConsumerStatefulWidget {
   const PaymentsAndRefundsScreen({super.key});
@@ -75,7 +77,15 @@ class _PaymentsAndRefundsScreenState extends ConsumerState<PaymentsAndRefundsScr
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : RefreshIndicator(
+          : _errorMessage != null
+              ? ErrorRetryView(
+                  error: FriendlyError(
+                    title: 'Failed to load payments',
+                    message: _errorMessage!,
+                  ),
+                  onRetry: _loadData,
+                )
+              : RefreshIndicator(
               onRefresh: _loadData,
               child: TabBarView(
                 controller: _tabController,
@@ -114,7 +124,7 @@ class _PaymentsAndRefundsScreenState extends ConsumerState<PaymentsAndRefundsScr
             children: [
               CircleAvatar(
                 radius: 20,
-                backgroundColor: isSuccess ? AllGoColors.success.withOpacity(0.12) : AllGoColors.warning.withOpacity(0.12),
+                backgroundColor: isSuccess ? AllGoColors.success.withValues(alpha: 0.12) : AllGoColors.warning.withValues(alpha: 0.12),
                 child: Icon(
                   isSuccess ? Icons.check_circle_outline : Icons.pending_outlined,
                   color: isSuccess ? AllGoColors.success : AllGoColors.warning,
@@ -146,7 +156,7 @@ class _PaymentsAndRefundsScreenState extends ConsumerState<PaymentsAndRefundsScr
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
-                      color: isSuccess ? AllGoColors.success.withOpacity(0.1) : AllGoColors.warning.withOpacity(0.1),
+                      color: isSuccess ? AllGoColors.success.withValues(alpha: 0.1) : AllGoColors.warning.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
@@ -193,7 +203,7 @@ class _PaymentsAndRefundsScreenState extends ConsumerState<PaymentsAndRefundsScr
             children: [
               CircleAvatar(
                 radius: 20,
-                backgroundColor: isProcessed ? AllGoColors.success.withOpacity(0.12) : AllGoColors.warning.withOpacity(0.12),
+                backgroundColor: isProcessed ? AllGoColors.success.withValues(alpha: 0.12) : AllGoColors.warning.withValues(alpha: 0.12),
                 child: Icon(
                   isProcessed ? Icons.currency_rupee : Icons.hourglass_top,
                   color: isProcessed ? AllGoColors.success : AllGoColors.warning,
@@ -225,7 +235,7 @@ class _PaymentsAndRefundsScreenState extends ConsumerState<PaymentsAndRefundsScr
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
-                      color: isProcessed ? AllGoColors.success.withOpacity(0.1) : AllGoColors.warning.withOpacity(0.1),
+                      color: isProcessed ? AllGoColors.success.withValues(alpha: 0.1) : AllGoColors.warning.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(

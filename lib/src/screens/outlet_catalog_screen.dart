@@ -5,6 +5,7 @@ import 'package:allgo_mobile_shared/allgo_mobile_shared.dart';
 import '../components/customer_product_card.dart';
 import '../components/product_customizer_modal.dart';
 import 'cart_screen.dart';
+import '../common/friendly_error.dart';
 
 class OutletCatalogScreen extends ConsumerStatefulWidget {
   final String outletId;
@@ -30,10 +31,7 @@ class _OutletCatalogScreenState extends ConsumerState<OutletCatalogScreen> {
 
   OutletOpenStatusModel? _outletStatus;
   List<ProductItem> _products = [];
-  List<dynamic> _categories = [];
-  String? _selectedCategory;
   final TextEditingController _searchCtrl = TextEditingController();
-
   CartModel? _cart;
 
   @override
@@ -47,7 +45,9 @@ class _OutletCatalogScreenState extends ConsumerState<OutletCatalogScreen> {
   Future<void> _recordStoreView() async {
     try {
       await ref.read(apiClientProvider).recordStoreView(widget.outletId);
-    } catch (_) {}
+    } catch (e, st) {
+      FriendlyError.from(e, st);
+    }
   }
 
   Future<void> _checkFavoriteStatus() async {
@@ -58,7 +58,9 @@ class _OutletCatalogScreenState extends ConsumerState<OutletCatalogScreen> {
           _isFavorite = favs.any((f) => f.id == widget.outletId);
         });
       }
-    } catch (_) {}
+    } catch (e, st) {
+      FriendlyError.from(e, st);
+    }
   }
 
   Future<void> _handleToggleFavorite() async {
@@ -77,10 +79,11 @@ class _OutletCatalogScreenState extends ConsumerState<OutletCatalogScreen> {
           ),
         );
       }
-    } catch (e) {
+    } catch (e, st) {
+      final err = FriendlyError.from(e, st);
       if (mounted) {
         setState(() => _isTogglingFav = false);
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(err.message)));
       }
     }
   }
@@ -108,7 +111,6 @@ class _OutletCatalogScreenState extends ConsumerState<OutletCatalogScreen> {
           final prodData = results[1] as Map<String, dynamic>;
           final items = (prodData['items'] as List<dynamic>?) ?? [];
           _products = items.map((p) => ProductItem.fromJson(p as Map<String, dynamic>)).toList();
-          _categories = (results[2] as List<dynamic>?) ?? [];
           _cart = results[3] as CartModel;
           _isLoading = false;
         });
@@ -184,7 +186,11 @@ class _OutletCatalogScreenState extends ConsumerState<OutletCatalogScreen> {
             onPressed: _isTogglingFav ? null : _handleToggleFavorite,
           ),
           IconButton(
-            icon: const Icon(Icons.shopping_bag_outlined),
+            icon: Badge.count(
+              count: _cart?.items.length ?? 0,
+              isLabelVisible: (_cart?.items.isNotEmpty ?? false),
+              child: const Icon(Icons.shopping_bag_outlined),
+            ),
             onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CartScreen())),
           ),
         ],

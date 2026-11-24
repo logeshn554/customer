@@ -6,6 +6,7 @@ import 'package:allgo_mobile_shared/allgo_mobile_shared.dart';
 
 import '../components/hire_driver_booking_form.dart';
 import '../components/hire_driver_active_view.dart';
+import '../common/friendly_error.dart';
 
 class HireDriverScreen extends ConsumerStatefulWidget {
   final String? activeBookingId;
@@ -50,7 +51,9 @@ class _HireDriverScreenState extends ConsumerState<HireDriverScreen> {
         _reportingLng = def.longitude;
         return;
       }
-    } catch (_) {}
+    } catch (e, st) {
+      FriendlyError.from(e, st);
+    }
 
     try {
       final permission = await Geolocator.checkPermission();
@@ -63,7 +66,9 @@ class _HireDriverScreenState extends ConsumerState<HireDriverScreen> {
           return;
         }
       }
-    } catch (_) {}
+    } catch (e, st) {
+      FriendlyError.from(e, st);
+    }
 
     if (mounted && _reportingCtrl.text.isEmpty) {
       _reportingCtrl.text = 'Current Location';
@@ -89,7 +94,9 @@ class _HireDriverScreenState extends ConsumerState<HireDriverScreen> {
     try {
       final b = await ref.read(apiClientProvider).getHireDriverBooking(bookingId);
       if (mounted) setState(() => _activeBooking = b);
-    } catch (_) {}
+    } catch (e, st) {
+      FriendlyError.from(e, st);
+    }
   }
 
   Future<void> _handleGetEstimate() async {
@@ -102,8 +109,14 @@ class _HireDriverScreenState extends ConsumerState<HireDriverScreen> {
         'reportingLongitude': _reportingLng,
       });
       if (mounted) setState(() => _estimateData = res);
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Estimate failed: $e')));
+    } catch (e, st) {
+      final err = FriendlyError.from(e, st);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(err.message),
+          action: SnackBarAction(label: 'Retry', onPressed: _handleGetEstimate),
+        ),
+      );
     } finally {
       if (mounted) setState(() => _isEstimating = false);
     }
@@ -120,8 +133,14 @@ class _HireDriverScreenState extends ConsumerState<HireDriverScreen> {
         'transmissionType': _transmission,
       });
       if (mounted) setState(() => _activeBooking = b);
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Booking failed: $e')));
+    } catch (e, st) {
+      final err = FriendlyError.from(e, st);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(err.message),
+          action: SnackBarAction(label: 'Retry', onPressed: _handleBookDriver),
+        ),
+      );
     } finally {
       if (mounted) setState(() => _isBooking = false);
     }

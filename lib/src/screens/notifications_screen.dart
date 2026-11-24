@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:allgo_mobile_shared/allgo_mobile_shared.dart';
+import '../common/friendly_error.dart';
 
 class NotificationsScreen extends ConsumerStatefulWidget {
   const NotificationsScreen({super.key});
@@ -42,7 +43,9 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
       final client = ref.read(apiClientProvider);
       await client.markAllNotificationsRead(role: 'CUSTOMER');
       _loadNotifications();
-    } catch (_) {}
+    } catch (e, st) {
+      FriendlyError.from(e, st);
+    }
   }
 
   Future<void> _markRead(String id) async {
@@ -50,7 +53,9 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
       final client = ref.read(apiClientProvider);
       await client.markNotificationRead(id, role: 'CUSTOMER');
       _loadNotifications();
-    } catch (_) {}
+    } catch (e, st) {
+      FriendlyError.from(e, st);
+    }
   }
 
   @override
@@ -95,16 +100,16 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                           margin: const EdgeInsets.only(bottom: 10),
                           padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
-                            color: isRead ? AllGoColors.surface : AllGoColors.primaryLight.withOpacity(0.08),
+                            color: isRead ? AllGoColors.surface : AllGoColors.primaryLight.withValues(alpha: 0.08),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: isRead ? AllGoColors.divider : AllGoColors.primary.withOpacity(0.3)),
+                            border: Border.all(color: isRead ? AllGoColors.divider : AllGoColors.primary.withValues(alpha: 0.3)),
                           ),
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               CircleAvatar(
                                 radius: 18,
-                                backgroundColor: isRead ? AllGoColors.divider : AllGoColors.primary.withOpacity(0.2),
+                                backgroundColor: isRead ? AllGoColors.divider : AllGoColors.primary.withValues(alpha: 0.2),
                                 child: Icon(
                                   n['category'] == 'PAYMENT' ? Icons.payment : Icons.notifications,
                                   size: 18,

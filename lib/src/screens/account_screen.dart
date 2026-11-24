@@ -78,7 +78,7 @@ class AccountScreen extends ConsumerWidget {
                   children: [
                     CircleAvatar(
                       radius: 30,
-                      backgroundColor: AllGoColors.primaryLight.withOpacity(0.3),
+                      backgroundColor: AllGoColors.primaryLight.withValues(alpha: 0.3),
                       child: Text(
                         (user?.fullName != null && user!.fullName!.isNotEmpty)
                             ? user.fullName![0].toUpperCase()
@@ -98,7 +98,7 @@ class AccountScreen extends ConsumerWidget {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                             decoration: BoxDecoration(
-                              color: AllGoColors.success.withOpacity(0.12),
+                              color: AllGoColors.success.withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(

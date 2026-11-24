@@ -21,12 +21,12 @@ class OrderDetailSafetyAndPartnerCard extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [AllGoColors.primary.withOpacity(0.12), AllGoColors.primary.withOpacity(0.04)],
+                colors: [AllGoColors.primary.withValues(alpha: 0.12), AllGoColors.primary.withValues(alpha: 0.04)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AllGoColors.primary.withOpacity(0.4)),
+              border: Border.all(color: AllGoColors.primary.withValues(alpha: 0.4)),
             ),
             child: Column(
               children: [

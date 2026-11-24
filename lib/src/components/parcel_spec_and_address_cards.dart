@@ -93,7 +93,7 @@ class ParcelSpecAndAddressCards extends StatelessWidget {
                           width: 110,
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: isSelected ? AllGoColors.primary.withOpacity(0.12) : AllGoColors.surface,
+                            color: isSelected ? AllGoColors.primary.withValues(alpha: 0.12) : AllGoColors.surface,
                             borderRadius: BorderRadius.circular(10),
                             border: Border.all(
                               color: isSelected ? AllGoColors.primary : AllGoColors.divider,
@@ -135,7 +135,7 @@ class ParcelSpecAndAddressCards extends StatelessWidget {
                       child: OutlinedButton(
                         onPressed: () => onSelectService('STANDARD'),
                         style: OutlinedButton.styleFrom(
-                          backgroundColor: selectedServiceCode == 'STANDARD' ? AllGoColors.primary.withOpacity(0.1) : null,
+                          backgroundColor: selectedServiceCode == 'STANDARD' ? AllGoColors.primary.withValues(alpha: 0.1) : null,
                           side: BorderSide(color: selectedServiceCode == 'STANDARD' ? AllGoColors.primary : AllGoColors.divider),
                         ),
                         child: const Text('Standard (2-4 hrs)'),
@@ -146,7 +146,7 @@ class ParcelSpecAndAddressCards extends StatelessWidget {
                       child: OutlinedButton(
                         onPressed: () => onSelectService('EXPRESS'),
                         style: OutlinedButton.styleFrom(
-                          backgroundColor: selectedServiceCode == 'EXPRESS' ? AllGoColors.primary.withOpacity(0.1) : null,
+                          backgroundColor: selectedServiceCode == 'EXPRESS' ? AllGoColors.primary.withValues(alpha: 0.1) : null,
                           side: BorderSide(color: selectedServiceCode == 'EXPRESS' ? AllGoColors.primary : AllGoColors.divider),
                         ),
                         child: const Text('Express (60 mins)'),

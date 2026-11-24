@@ -69,7 +69,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                         ),
                         child: CircleAvatar(
                           radius: 28,
-                          backgroundColor: AllGoColors.primaryLight.withOpacity(0.3),
+                          backgroundColor: AllGoColors.primaryLight.withValues(alpha: 0.3),
                           child: Icon(_getIconForAvatar(av), size: 28, color: AllGoColors.primaryDark),
                         ),
                       ),
@@ -133,7 +133,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   children: [
                     CircleAvatar(
                       radius: 46,
-                      backgroundColor: AllGoColors.primaryLight.withOpacity(0.3),
+                      backgroundColor: AllGoColors.primaryLight.withValues(alpha: 0.3),
                       child: Icon(_getIconForAvatar(_selectedAvatar), size: 48, color: AllGoColors.primaryDark),
                     ),
                     Positioned(

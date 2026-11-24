@@ -64,7 +64,7 @@ class _FavoriteAndRecentStoresScreenState extends ConsumerState<FavoriteAndRecen
           width: 48,
           height: 48,
           decoration: BoxDecoration(
-            color: AllGoColors.primary.withOpacity(0.12),
+            color: AllGoColors.primary.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(10),
           ),
           child: const Icon(Icons.storefront, color: AllGoColors.primary),

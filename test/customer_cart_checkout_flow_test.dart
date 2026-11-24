@@ -36,8 +36,8 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
 
-      expect(find.text('Checkout'), findsOneWidget);
-      expect(find.text('Delivery Address'), findsOneWidget);
+      expect(find.text('Checkout & Payment'), findsOneWidget);
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
     });
 
     testWidgets('CheckoutPaymentSelector displays UPI, Card, and Cash on Delivery options', (tester) async {
@@ -54,12 +54,12 @@ void main() {
         ),
       );
 
-      expect(find.text('Payment Method'), findsOneWidget);
-      expect(find.text('UPI (GPay / PhonePe / Paytm)'), findsOneWidget);
+      expect(find.text('Select Payment Method'), findsOneWidget);
+      expect(find.text('UPI Instant (GPay / PhonePe / Paytm)'), findsOneWidget);
       expect(find.text('Credit / Debit Card'), findsOneWidget);
-      expect(find.text('Cash on Delivery'), findsOneWidget);
+      expect(find.text('Cash on Delivery (COD)'), findsOneWidget);
 
-      await tester.tap(find.text('Cash on Delivery'));
+      await tester.tap(find.text('Cash on Delivery (COD)'));
       await tester.pumpAndSettle();
       expect(selected, 'COD');
     });

@@ -37,7 +37,7 @@ class RideBookingForm extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: isSelected ? AllGoColors.primary.withOpacity(0.08) : AllGoColors.surface,
+          color: isSelected ? AllGoColors.primary.withValues(alpha: 0.08) : AllGoColors.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: isSelected ? AllGoColors.primary : AllGoColors.divider, width: isSelected ? 1.5 : 1),
         ),

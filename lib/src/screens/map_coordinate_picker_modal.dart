@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:allgo_mobile_shared/allgo_mobile_shared.dart';
+import '../common/friendly_error.dart';
 
 class MapLocationResult {
   final double latitude;
@@ -133,7 +134,9 @@ class _MapCoordinatePickerModalState extends ConsumerState<MapCoordinatePickerMo
           CameraUpdate.newLatLngZoom(LatLng(_currentLat, _currentLng), 16.5),
         );
       }
-    } catch (_) {} finally {
+    } catch (e, st) {
+      FriendlyError.from(e, st);
+    } finally {
       if (mounted) setState(() => _isSearchingPlaces = false);
     }
   }
@@ -224,15 +227,24 @@ class _MapCoordinatePickerModalState extends ConsumerState<MapCoordinatePickerMo
               decoration: InputDecoration(
                 hintText: 'Search area, landmark, or apartment...',
                 prefixIcon: const Icon(Icons.search, color: AllGoColors.primary),
-                suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear, size: 18),
-                        onPressed: () {
-                          _searchController.clear();
-                          _onSearchChanged('');
-                        },
+                suffixIcon: _isSearchingPlaces
+                    ? const Padding(
+                        padding: EdgeInsets.all(12),
+                        child: SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
                       )
-                    : null,
+                    : _searchController.text.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear, size: 18),
+                            onPressed: () {
+                              _searchController.clear();
+                              _onSearchChanged('');
+                            },
+                          )
+                        : null,
                 filled: true,
                 fillColor: Colors.grey.shade100,
                 contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),

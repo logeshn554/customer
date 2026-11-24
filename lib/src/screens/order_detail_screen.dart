@@ -90,7 +90,7 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
           ),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(color: AllGoColors.primary.withOpacity(0.1), borderRadius: BorderRadius.circular(6)),
+            decoration: BoxDecoration(color: AllGoColors.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6)),
             child: Text(order.status, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AllGoColors.primary)),
           ),
         ],

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:allgo_mobile_shared/allgo_mobile_shared.dart';
+import '../widgets/error_retry_view.dart';
+import '../common/friendly_error.dart';
 
 class WalletScreen extends ConsumerStatefulWidget {
   const WalletScreen({super.key});
@@ -120,7 +122,15 @@ class _WalletScreenState extends ConsumerState<WalletScreen> {
       appBar: const AllGoAppBar(title: 'AllGo Wallet', showBackButton: true),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : RefreshIndicator(
+          : _errorMessage != null
+              ? ErrorRetryView(
+                  error: FriendlyError(
+                    title: 'Failed to load wallet',
+                    message: _errorMessage!,
+                  ),
+                  onRetry: _loadWallet,
+                )
+              : RefreshIndicator(
               onRefresh: _loadWallet,
               child: ListView(
                 padding: const EdgeInsets.all(16.0),
@@ -137,7 +147,7 @@ class _WalletScreenState extends ConsumerState<WalletScreen> {
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: AllGoColors.primary.withOpacity(0.3),
+                          color: AllGoColors.primary.withValues(alpha: 0.3),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -228,7 +238,7 @@ class _WalletScreenState extends ConsumerState<WalletScreen> {
                           children: [
                             CircleAvatar(
                               radius: 18,
-                              backgroundColor: isCredit ? AllGoColors.success.withOpacity(0.12) : AllGoColors.error.withOpacity(0.12),
+                              backgroundColor: isCredit ? AllGoColors.success.withValues(alpha: 0.12) : AllGoColors.error.withValues(alpha: 0.12),
                               child: Icon(
                                 isCredit ? Icons.arrow_downward : Icons.arrow_upward,
                                 size: 18,

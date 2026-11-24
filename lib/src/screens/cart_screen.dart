@@ -5,6 +5,7 @@ import 'package:allgo_mobile_shared/allgo_mobile_shared.dart';
 import '../components/cart_item_card.dart';
 import '../components/cart_bill_details.dart';
 import 'checkout_screen.dart';
+import '../common/friendly_error.dart';
 
 class CartScreen extends ConsumerStatefulWidget {
   const CartScreen({super.key});
@@ -33,7 +34,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       if (cart.items.isNotEmpty) {
         try {
           pricing = await client.getCheckoutEstimate();
-        } catch (_) {}
+        } catch (e, st) {
+          FriendlyError.from(e, st);
+        }
       }
       if (mounted) {
         setState(() {
@@ -42,8 +45,17 @@ class _CartScreenState extends ConsumerState<CartScreen> {
           _isLoading = false;
         });
       }
-    } catch (_) {
-      if (mounted) setState(() => _isLoading = false);
+    } catch (e, st) {
+      final err = FriendlyError.from(e, st);
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(err.message),
+            action: SnackBarAction(label: 'Retry', onPressed: _loadCartData),
+          ),
+        );
+      }
     }
   }
 
@@ -53,15 +65,23 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       CartPricingModel? pricing;
       try {
         pricing = await ref.read(apiClientProvider).getCheckoutEstimate();
-      } catch (_) {}
+      } catch (e, st) {
+        FriendlyError.from(e, st);
+      }
       if (mounted) {
         setState(() {
           _cart = updated;
           _pricing = pricing;
         });
       }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Update failed: $e')));
+    } catch (e, st) {
+      final err = FriendlyError.from(e, st);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(err.message),
+          action: SnackBarAction(label: 'Retry', onPressed: () => _updateQuantity(cartItemId, qty)),
+        ),
+      );
     }
   }
 
@@ -72,7 +92,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       if (updated.items.isNotEmpty) {
         try {
           pricing = await ref.read(apiClientProvider).getCheckoutEstimate();
-        } catch (_) {}
+        } catch (e, st) {
+          FriendlyError.from(e, st);
+        }
       }
       if (mounted) {
         setState(() {
@@ -80,8 +102,14 @@ class _CartScreenState extends ConsumerState<CartScreen> {
           _pricing = pricing;
         });
       }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Remove failed: $e')));
+    } catch (e, st) {
+      final err = FriendlyError.from(e, st);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(err.message),
+          action: SnackBarAction(label: 'Retry', onPressed: () => _removeItem(cartItemId)),
+        ),
+      );
     }
   }
 
@@ -134,9 +162,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               margin: const EdgeInsets.only(bottom: 16),
               decoration: BoxDecoration(
-                color: AllGoColors.primary.withOpacity(0.08),
+                color: AllGoColors.primary.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: AllGoColors.primary.withOpacity(0.2)),
+                border: Border.all(color: AllGoColors.primary.withValues(alpha: 0.2)),
               ),
               child: Row(
                 children: [

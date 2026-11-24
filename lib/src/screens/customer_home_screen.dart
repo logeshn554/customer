@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:allgo_mobile_shared/allgo_mobile_shared.dart';
@@ -8,14 +9,15 @@ import '../components/customer_home_tab.dart';
 import '../components/customer_orders_tab.dart';
 import '../components/customer_explore_tab.dart';
 import '../components/unified_active_bookings_tray.dart';
-import '../screens/account_screen.dart';
-import '../screens/outlet_catalog_screen.dart';
-import '../screens/delivery_tracking_screen.dart';
-import '../screens/ride_booking_screen.dart';
-import '../screens/parcel_send_screen.dart';
-import '../screens/hire_driver_screen.dart';
-import '../screens/support_screen.dart';
-import '../screens/map_coordinate_picker_modal.dart';
+import 'account_screen.dart';
+import 'outlet_catalog_screen.dart';
+import 'delivery_tracking_screen.dart';
+import 'ride_booking_screen.dart';
+import 'parcel_send_screen.dart';
+import 'hire_driver_screen.dart';
+import 'support_screen.dart';
+import 'map_coordinate_picker_modal.dart';
+import '../common/friendly_error.dart';
 
 class CustomerHomePage extends ConsumerStatefulWidget {
   const CustomerHomePage({super.key});
@@ -79,7 +81,9 @@ class _CustomerHomePageState extends ConsumerState<CustomerHomePage> {
         _currentLongitude = def.longitude;
         _currentAddressLabel = '${def.label}: ${def.addressLine1}, ${def.city}';
       }
-    } catch (_) {}
+    } catch (e, st) {
+      FriendlyError.from(e, st);
+    }
 
     // 2. If no saved address, detect GPS position
     if (_savedAddresses.isEmpty) {
@@ -150,7 +154,9 @@ class _CustomerHomePageState extends ConsumerState<CustomerHomePage> {
           ),
         );
       }
-    } catch (_) {}
+    } catch (e, st) {
+      FriendlyError.from(e, st);
+    }
 
     // B. Active rides
     try {
@@ -178,7 +184,9 @@ class _CustomerHomePageState extends ConsumerState<CustomerHomePage> {
           ),
         );
       }
-    } catch (_) {}
+    } catch (e, st) {
+      FriendlyError.from(e, st);
+    }
 
     // C. Active parcels
     try {
@@ -206,7 +214,9 @@ class _CustomerHomePageState extends ConsumerState<CustomerHomePage> {
           ),
         );
       }
-    } catch (_) {}
+    } catch (e, st) {
+      FriendlyError.from(e, st);
+    }
 
     // D. Active driver bookings
     try {
@@ -234,7 +244,9 @@ class _CustomerHomePageState extends ConsumerState<CustomerHomePage> {
           ),
         );
       }
-    } catch (_) {}
+    } catch (e, st) {
+      FriendlyError.from(e, st);
+    }
 
     if (mounted) {
       setState(() => _unifiedBookings = combined);
@@ -246,7 +258,9 @@ class _CustomerHomePageState extends ConsumerState<CustomerHomePage> {
       final client = ref.read(apiClientProvider);
       final orders = await client.listCustomerOrders().catchError((_) => <CustomerOrderDetail>[]);
       if (mounted) setState(() => _orders = orders);
-    } catch (_) {}
+    } catch (e, st) {
+      FriendlyError.from(e, st);
+    }
   }
 
   Future<void> _loadDiscovery() async {
@@ -263,7 +277,9 @@ class _CustomerHomePageState extends ConsumerState<CustomerHomePage> {
           _categories = cats;
         });
       }
-    } catch (_) {}
+    } catch (e, st) {
+      FriendlyError.from(e, st);
+    }
   }
 
   void _onOutletSelected(DiscoveryOutlet outlet) {
@@ -367,16 +383,51 @@ class _CustomerHomePageState extends ConsumerState<CustomerHomePage> {
     }
   }
 
+  Future<bool> _showExitAppDialog() async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Exit AllGo?'),
+        content: const Text('Are you sure you want to close the application?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AllGoColors.primary),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Exit', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+    return result ?? false;
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(currentUserProvider);
 
-    return Scaffold(
-      backgroundColor: AllGoColors.background,
-      body: SafeArea(
-        child: IndexedStack(
-          index: _currentIndex,
-          children: [
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (bool didPop, dynamic result) async {
+        if (didPop) return;
+        if (_currentIndex != 0) {
+          setState(() => _currentIndex = 0);
+          return;
+        }
+        final shouldExit = await _showExitAppDialog();
+        if (shouldExit) {
+          SystemNavigator.pop();
+        }
+      },
+      child: Scaffold(
+        backgroundColor: AllGoColors.background,
+        body: SafeArea(
+          child: IndexedStack(
+            index: _currentIndex,
+            children: [
             CustomerHomeTab(
               user: user,
               activeDeliveries: _activeDeliveries,
@@ -418,6 +469,7 @@ class _CustomerHomePageState extends ConsumerState<CustomerHomePage> {
           NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person), label: 'Account'),
         ],
       ),
-    );
+    ),
+  );
   }
 }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:allgo_mobile_shared/allgo_mobile_shared.dart';
-import '../screens/outlet_catalog_screen.dart';
 
 class CustomerExploreTab extends StatelessWidget {
   final TextEditingController searchController;
@@ -61,7 +60,7 @@ class CustomerExploreTab extends StatelessWidget {
                               width: 48,
                               height: 48,
                               decoration: BoxDecoration(
-                                color: AllGoColors.primary.withOpacity(0.1),
+                                color: AllGoColors.primary.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: const Icon(Icons.storefront, color: AllGoColors.primary),
