@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:allgo_mobile_shared/allgo_mobile_shared.dart';
 import 'customer_home_shell.dart';
@@ -16,7 +17,7 @@ class OtpVerifyScreen extends ConsumerStatefulWidget {
 }
 
 class _OtpVerifyScreenState extends ConsumerState<OtpVerifyScreen> {
-  int _secondsRemaining = 60;
+  int _secondsRemaining = 30;
   Timer? _countdownTimer;
   String _enteredCode = '';
 
@@ -27,7 +28,7 @@ class _OtpVerifyScreenState extends ConsumerState<OtpVerifyScreen> {
   }
 
   void _startCountdown() {
-    _secondsRemaining = 60;
+    _secondsRemaining = 30;
     _countdownTimer?.cancel();
     _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!mounted) return;
@@ -39,6 +40,22 @@ class _OtpVerifyScreenState extends ConsumerState<OtpVerifyScreen> {
         timer.cancel();
       }
     });
+  }
+
+  Future<void> _pasteFromClipboard() async {
+    final data = await Clipboard.getData('text/plain');
+    final text = data?.text?.replaceAll(RegExp(r'\D'), '') ?? '';
+    if (text.length >= 6) {
+      final code = text.substring(0, 6);
+      setState(() => _enteredCode = code);
+      _handleVerify(code);
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No valid 6-digit OTP found in clipboard')),
+        );
+      }
+    }
   }
 
   @override
@@ -107,50 +124,67 @@ class _OtpVerifyScreenState extends ConsumerState<OtpVerifyScreen> {
     return Scaffold(
       backgroundColor: AllGoColors.surface,
       appBar: const AllGoAppBar(title: 'Verify Phone'),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const SizedBox(height: 12),
-              Text('Enter 6-digit code', style: AllGoTypography.heading2),
-              const SizedBox(height: 8),
-              Text(
-                'We sent an SMS code to ${widget.phone}.',
-                style: AllGoTypography.subtitle,
-              ),
-              const SizedBox(height: 36),
-              AllGoOtpInput(
-                length: 6,
-                onCompleted: (code) => _handleVerify(code),
-                onChanged: (code) => _enteredCode = code,
-              ),
-              const SizedBox(height: 24),
-              Center(
-                child: _secondsRemaining > 0
-                    ? Text(
-                        'Resend code in $_secondsRemaining seconds',
-                        style: AllGoTypography.bodyMedium.copyWith(color: AllGoColors.textTertiary),
-                      )
-                    : TextButton(
-                        onPressed: _handleResend,
-                        child: Text(
-                          'Resend Code',
-                          style: AllGoTypography.button.copyWith(color: AllGoColors.primary),
-                        ),
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        behavior: HitTestBehavior.opaque,
+        child: SafeArea(
+          child: AutofillGroup(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const SizedBox(height: 12),
+                  Text('Enter 6-digit code', style: AllGoTypography.heading2),
+                  const SizedBox(height: 8),
+                  Text(
+                    'We sent an SMS code to ${widget.phone}.',
+                    style: AllGoTypography.subtitle,
+                  ),
+                  const SizedBox(height: 36),
+                  AllGoOtpInput(
+                    length: 6,
+                    onCompleted: (code) => _handleVerify(code),
+                    onChanged: (code) => _enteredCode = code,
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ActionChip(
+                        avatar: const Icon(Icons.content_paste_rounded, size: 16),
+                        label: const Text('Paste Code'),
+                        onPressed: _pasteFromClipboard,
                       ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Center(
+                    child: _secondsRemaining > 0
+                        ? Text(
+                            'Resend code in $_secondsRemaining seconds',
+                            style: AllGoTypography.bodyMedium.copyWith(color: AllGoColors.textTertiary),
+                          )
+                        : TextButton(
+                            onPressed: _handleResend,
+                            child: Text(
+                              'Resend Code',
+                              style: AllGoTypography.button.copyWith(color: AllGoColors.primary),
+                            ),
+                          ),
+                  ),
+                  const Spacer(),
+                  AllGoButton(
+                    label: 'Verify & Continue',
+                    isLoading: authState.isLoading,
+                    onPressed: _enteredCode.length == 6
+                        ? () => _handleVerify(_enteredCode)
+                        : null,
+                  ),
+                  const SizedBox(height: 16),
+                ],
               ),
-              const Spacer(),
-              AllGoButton(
-                label: 'Verify & Continue',
-                isLoading: authState.isLoading,
-                onPressed: _enteredCode.length == 6
-                    ? () => _handleVerify(_enteredCode)
-                    : null,
-              ),
-              const SizedBox(height: 16),
-            ],
+            ),
           ),
         ),
       ),

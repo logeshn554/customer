@@ -12,6 +12,9 @@ import 'edit_profile_screen.dart';
 import 'privacy_security_screen.dart';
 import 'saved_addresses_screen.dart';
 import 'favorite_and_recent_stores_screen.dart';
+import 'legal/terms_screen.dart';
+import 'legal/privacy_policy_screen.dart';
+import 'legal/about_screen.dart';
 
 class AccountScreen extends ConsumerWidget {
   const AccountScreen({super.key});
@@ -203,6 +206,30 @@ class AccountScreen extends ConsumerWidget {
                 MaterialPageRoute(builder: (_) => const CustomerSupportScreen()),
               ),
             ),
+            _buildOptionTile(
+              icon: Icons.description_outlined,
+              title: 'Terms of Service',
+              subtitle: 'Platform marketplace rules and service terms',
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const TermsScreen()),
+              ),
+            ),
+            _buildOptionTile(
+              icon: Icons.privacy_tip_outlined,
+              title: 'Privacy Policy',
+              subtitle: 'DPDP compliance and personal data rights',
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const PrivacyPolicyScreen()),
+              ),
+            ),
+            _buildOptionTile(
+              icon: Icons.info_outline,
+              title: 'About AllGo',
+              subtitle: 'Version details, company info and licenses',
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const AboutScreen()),
+              ),
+            ),
             const SizedBox(height: 32),
 
             // Logout Button
@@ -215,7 +242,7 @@ class AccountScreen extends ConsumerWidget {
             const SizedBox(height: 20),
             Center(
               child: Text(
-                'AllGo Super App v0.1.0 (Phase 1 Local)',
+                'AllGo Super App v2.4.0 (Production Ready)',
                 style: AllGoTypography.caption,
               ),
             ),

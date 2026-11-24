@@ -9,6 +9,7 @@ import '../components/delivery_instructions_selector.dart';
 import '../components/delivery_slot_picker.dart';
 import '../components/delivery_tip_selector.dart';
 import '../widgets/empty_state_view.dart';
+import '../components/guest_login_prompt_sheet.dart';
 import 'checkout_screen.dart';
 
 class CartScreen extends ConsumerStatefulWidget {
@@ -195,6 +196,15 @@ class _CartScreenState extends ConsumerState<CartScreen> {
             AllGoButton(
               label: 'Proceed to Checkout - ₹${_finalTotal.toStringAsFixed(0)}',
               onPressed: () {
+                final user = ref.read(currentUserProvider);
+                if (user == null) {
+                  GuestLoginPromptSheet.show(
+                    context,
+                    title: 'Sign In to Checkout',
+                    subtitle: 'Please log in with your phone number to complete payment and place your order.',
+                  );
+                  return;
+                }
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (_) => CheckoutScreen(

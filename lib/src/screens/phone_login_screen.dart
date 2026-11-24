@@ -55,34 +55,38 @@ class _PhoneLoginScreenState extends ConsumerState<PhoneLoginScreen> {
     return Scaffold(
       backgroundColor: AllGoColors.surface,
       appBar: const AllGoAppBar(title: 'Enter Phone Number'),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: 12),
-                Text('What is your phone number?', style: AllGoTypography.heading2),
-                const SizedBox(height: 8),
-                Text(
-                  'We will send a 6-digit verification code to confirm your number.',
-                  style: AllGoTypography.subtitle,
-                ),
-                const SizedBox(height: 32),
-                AllGoPhoneInput(
-                  controller: _phoneController,
-                  enabled: !authState.isLoading,
-                ),
-                const Spacer(),
-                AllGoButton(
-                  label: 'Send Verification Code',
-                  isLoading: authState.isLoading,
-                  onPressed: _handleContinue,
-                ),
-                const SizedBox(height: 16),
-              ],
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        behavior: HitTestBehavior.opaque,
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const SizedBox(height: 12),
+                  Text('What is your phone number?', style: AllGoTypography.heading2),
+                  const SizedBox(height: 8),
+                  Text(
+                    'We will send a 6-digit verification code to confirm your number.',
+                    style: AllGoTypography.subtitle,
+                  ),
+                  const SizedBox(height: 32),
+                  AllGoPhoneInput(
+                    controller: _phoneController,
+                    enabled: !authState.isLoading,
+                  ),
+                  const Spacer(),
+                  AllGoButton(
+                    label: 'Send Verification Code',
+                    isLoading: authState.isLoading,
+                    onPressed: _handleContinue,
+                  ),
+                  const SizedBox(height: 16),
+                ],
+              ),
             ),
           ),
         ),
