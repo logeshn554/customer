@@ -19,7 +19,7 @@ class ConnectivityBanner extends StatelessWidget {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       width: double.infinity,
-      color: AllGoColors.error,
+      color: AllGoColors.warning,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: SafeArea(
         bottom: false,
@@ -33,11 +33,11 @@ class ConnectivityBanner extends StatelessWidget {
             const SizedBox(width: 10),
             const Expanded(
               child: Text(
-                'You are currently offline. Check connection.',
+                'No internet connection — showing cached data',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 12,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),

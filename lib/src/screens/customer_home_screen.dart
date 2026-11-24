@@ -9,6 +9,7 @@ import '../components/delivery_address_selection_sheet.dart';
 import '../components/unified_active_bookings_tray.dart';
 import '../localization/app_localizations.dart';
 import '../providers/customer_home_provider.dart';
+import '../widgets/connectivity_banner.dart';
 import 'account_screen.dart';
 import 'delivery_tracking_screen.dart';
 import 'hire_driver_screen.dart';
@@ -153,37 +154,47 @@ class _CustomerHomePageState extends ConsumerState<CustomerHomePage> {
       },
       child: Scaffold(
         body: SafeArea(
-          child: IndexedStack(
-            index: _currentIndex,
+          child: Column(
             children: [
-              CustomerHomeTab(
-                user: user,
-                activeDeliveries: homeState.activeDeliveries,
-                unifiedBookings: _enrichBookings(homeState.unifiedBookings),
-                currentAddressLabel: homeState.currentAddressLabel,
-                currentLatitude: homeState.currentLatitude,
-                currentLongitude: homeState.currentLongitude,
-                onSelectAddress: () => _handleSelectAddress(homeState),
-                isLoading: homeState.isLoading,
-                onRefresh: homeNotifier.resolveLocationAndLoad,
-                onNavigateTab: (idx) => setState(() => _currentIndex = idx),
+              ConnectivityBanner(
+                isOffline: homeState.isOffline,
+                onRetry: homeNotifier.resolveLocationAndLoad,
               ),
-              CustomerExploreTab(
-                searchController: _searchController,
-                outlets: homeState.outlets,
-                categories: homeState.categories,
-                isLoading: homeState.isLoading,
-                onSearch: (_) => homeNotifier.loadDiscovery(),
-                onOutletSelected: _onOutletSelected,
+              Expanded(
+                child: IndexedStack(
+                  index: _currentIndex,
+                  children: [
+                    CustomerHomeTab(
+                      user: user,
+                      activeDeliveries: homeState.activeDeliveries,
+                      unifiedBookings: _enrichBookings(homeState.unifiedBookings),
+                      currentAddressLabel: homeState.currentAddressLabel,
+                      currentLatitude: homeState.currentLatitude,
+                      currentLongitude: homeState.currentLongitude,
+                      onSelectAddress: () => _handleSelectAddress(homeState),
+                      isLoading: homeState.isLoading,
+                      onRefresh: homeNotifier.resolveLocationAndLoad,
+                      onNavigateTab: (idx) => setState(() => _currentIndex = idx),
+                    ),
+                    CustomerExploreTab(
+                      searchController: _searchController,
+                      outlets: homeState.outlets,
+                      categories: homeState.categories,
+                      isLoading: homeState.isLoading,
+                      onSearch: (_) => homeNotifier.loadDiscovery(),
+                      onOutletSelected: _onOutletSelected,
+                    ),
+                    CustomerOrdersTab(
+                      orders: homeState.orders,
+                      isLoading: homeState.isLoading,
+                      onRefresh: homeNotifier.loadOrders,
+                      activeFilter: homeState.activeOrderFilter,
+                      onFilterChanged: homeNotifier.setOrderFilter,
+                    ),
+                    const AccountScreen(),
+                  ],
+                ),
               ),
-              CustomerOrdersTab(
-                orders: homeState.orders,
-                isLoading: homeState.isLoading,
-                onRefresh: homeNotifier.loadOrders,
-                activeFilter: homeState.activeOrderFilter,
-                onFilterChanged: homeNotifier.setOrderFilter,
-              ),
-              const AccountScreen(),
             ],
           ),
         ),

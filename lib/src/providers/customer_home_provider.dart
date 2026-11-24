@@ -16,6 +16,7 @@ class CustomerHomeState {
   final List<DeliveryJobModel> activeDeliveries;
   final List<UnifiedActiveBookingItem> unifiedBookings;
   final String activeOrderFilter;
+  final bool isOffline;
 
   const CustomerHomeState({
     this.isLoading = true,
@@ -29,6 +30,7 @@ class CustomerHomeState {
     this.activeDeliveries = const [],
     this.unifiedBookings = const [],
     this.activeOrderFilter = 'ALL',
+    this.isOffline = false,
   });
 
   CustomerHomeState copyWith({
@@ -43,6 +45,7 @@ class CustomerHomeState {
     List<DeliveryJobModel>? activeDeliveries,
     List<UnifiedActiveBookingItem>? unifiedBookings,
     String? activeOrderFilter,
+    bool? isOffline,
   }) {
     return CustomerHomeState(
       isLoading: isLoading ?? this.isLoading,
@@ -56,6 +59,7 @@ class CustomerHomeState {
       activeDeliveries: activeDeliveries ?? this.activeDeliveries,
       unifiedBookings: unifiedBookings ?? this.unifiedBookings,
       activeOrderFilter: activeOrderFilter ?? this.activeOrderFilter,
+      isOffline: isOffline ?? this.isOffline,
     );
   }
 }
@@ -240,9 +244,11 @@ class CustomerHomeNotifier extends StateNotifier<CustomerHomeState> {
         lng: state.currentLongitude,
       ).catchError((_) => <DiscoveryOutlet>[]);
       final cats = await _client.listCategories().catchError((_) => <DiscoveryCategory>[]);
-      state = state.copyWith(outlets: outlets, categories: cats);
+      state = state.copyWith(outlets: outlets, categories: cats, isOffline: false);
     } catch (e, st) {
-      FriendlyError.from(e, st);
+      final err = FriendlyError.from(e, st);
+      final isOfflineErr = err.title == 'No Internet Connection' || err.message.toLowerCase().contains('connection');
+      state = state.copyWith(isOffline: isOfflineErr);
     }
   }
 
