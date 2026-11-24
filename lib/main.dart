@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'src/localization/app_localizations.dart';
@@ -7,13 +9,33 @@ import 'src/theme/app_theme_customer.dart';
 import 'src/widgets/global_error_boundary.dart';
 
 void main() {
-  WidgetsFlutterBinding.ensureInitialized();
-  GlobalErrorWidget.initialize();
-  runApp(
-    const ProviderScope(
-      child: AllGoCustomerApp(),
-    ),
-  );
+  runZonedGuarded(() async {
+    WidgetsFlutterBinding.ensureInitialized();
+    GlobalErrorWidget.initialize();
+
+    FlutterError.onError = (FlutterErrorDetails details) {
+      FlutterError.presentError(details);
+      developer.log(
+        'FlutterError caught by production boundary: ${details.exceptionAsString()}',
+        error: details.exception,
+        stackTrace: details.stack,
+        name: 'AllGo.CrashReporter',
+      );
+    };
+
+    runApp(
+      const ProviderScope(
+        child: AllGoCustomerApp(),
+      ),
+    );
+  }, (error, stack) {
+    developer.log(
+      'Uncaught asynchronous zone error: $error',
+      error: error,
+      stackTrace: stack,
+      name: 'AllGo.ZoneError',
+    );
+  });
 }
 
 class AllGoCustomerApp extends ConsumerWidget {

@@ -24,6 +24,12 @@
 	<true/>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>AllGo requires location to detect delivery address and accurate courier dispatch.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>AllGo requires continuous location during active deliveries and rides to calculate arrival ETA and route safety.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>AllGo requires camera access to scan parcel delivery QR codes and set your profile photo.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>AllGo requires photo library access to choose a profile avatar and upload delivery receipts.</string>
 	<!-- Google Maps API Key for iOS restricted by iOS Bundle Identifier in.allgo.customer -->
 	<key>GoogleMapsApiKey</key>
 	<string>$(GOOGLE_MAPS_CLIENT_IOS_KEY)</string>
